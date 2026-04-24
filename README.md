@@ -28,23 +28,23 @@ decodes, and visualizes everything crossing your network — live.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    FRONTEND  ·  React 18 + Vite                  │
-│                                                                  │
-│   Overview    Capture    Graph    Beacon    Map    Profiles       │
-│      │           │         │        │        │        │          │
+│                    FRONTEND  ·  React 18 + Vite                 │
+│                                                                 │
+│   Overview    Capture    Graph    Beacon    Map    Profiles     │
+│      │           │         │        │        │        │         │
 │      └───────────┴─────────┴────────┴────────┴────────┘         │
-│                       WebSocket + REST API                       │
+│                       WebSocket + REST API                      │
 │               ┌─────────────────────────────┐                   │
 │               │     Vite Dev Proxy          │  :8080 → :8000    │
 └───────────────┴─────────────────────────────┴───────────────────┘
                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                  BACKEND  ·  FastAPI + Python 3.11+              │
-│                                                                  │
+│                  BACKEND  ·  FastAPI + Python 3.11+             │
+│                                                                 │
 │   /ws/capture   /ws/beacon   /ws/graph   /ws/map   /ws/alerts   │
-│        │                                                         │
-│        ├── Scapy AsyncSniffer  (root/admin → live packets)       │
-│        └── Mock Data Generator (fallback  → no root needed)      │
+│        │                                                        │
+│        ├── Scapy AsyncSniffer  (root/admin → live packets)      │
+│        └── Mock Data Generator (fallback  → no root needed)     │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
