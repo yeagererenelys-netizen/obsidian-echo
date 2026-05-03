@@ -13,8 +13,13 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppVpnRouteImport } from './routes/app.vpn'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSessionsRouteImport } from './routes/app.sessions'
+import { Route as AppReportsRouteImport } from './routes/app.reports'
+import { Route as AppProtocolsRouteImport } from './routes/app.protocols'
+import { Route as AppPcapRouteImport } from './routes/app.pcap'
 import { Route as AppOverviewRouteImport } from './routes/app.overview'
+import { Route as AppMapRouteImport } from './routes/app.map'
 import { Route as AppGraphRouteImport } from './routes/app.graph'
 import { Route as AppDevicesRouteImport } from './routes/app.devices'
 import { Route as AppCaptureRouteImport } from './routes/app.capture'
@@ -42,14 +47,39 @@ const AppVpnRoute = AppVpnRouteImport.update({
   path: '/vpn',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSessionsRoute = AppSessionsRouteImport.update({
   id: '/sessions',
   path: '/sessions',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProtocolsRoute = AppProtocolsRouteImport.update({
+  id: '/protocols',
+  path: '/protocols',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPcapRoute = AppPcapRouteImport.update({
+  id: '/pcap',
+  path: '/pcap',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOverviewRoute = AppOverviewRouteImport.update({
   id: '/overview',
   path: '/overview',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMapRoute = AppMapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => AppRoute,
 } as any)
 const AppGraphRoute = AppGraphRouteImport.update({
@@ -91,8 +121,13 @@ export interface FileRoutesByFullPath {
   '/app/capture': typeof AppCaptureRoute
   '/app/devices': typeof AppDevicesRouteWithChildren
   '/app/graph': typeof AppGraphRoute
+  '/app/map': typeof AppMapRoute
   '/app/overview': typeof AppOverviewRoute
+  '/app/pcap': typeof AppPcapRoute
+  '/app/protocols': typeof AppProtocolsRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/sessions': typeof AppSessionsRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/vpn': typeof AppVpnRoute
   '/app/': typeof AppIndexRoute
   '/app/devices/$ip': typeof AppDevicesIpRoute
@@ -104,8 +139,13 @@ export interface FileRoutesByTo {
   '/app/capture': typeof AppCaptureRoute
   '/app/devices': typeof AppDevicesRouteWithChildren
   '/app/graph': typeof AppGraphRoute
+  '/app/map': typeof AppMapRoute
   '/app/overview': typeof AppOverviewRoute
+  '/app/pcap': typeof AppPcapRoute
+  '/app/protocols': typeof AppProtocolsRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/sessions': typeof AppSessionsRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/vpn': typeof AppVpnRoute
   '/app': typeof AppIndexRoute
   '/app/devices/$ip': typeof AppDevicesIpRoute
@@ -119,8 +159,13 @@ export interface FileRoutesById {
   '/app/capture': typeof AppCaptureRoute
   '/app/devices': typeof AppDevicesRouteWithChildren
   '/app/graph': typeof AppGraphRoute
+  '/app/map': typeof AppMapRoute
   '/app/overview': typeof AppOverviewRoute
+  '/app/pcap': typeof AppPcapRoute
+  '/app/protocols': typeof AppProtocolsRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/sessions': typeof AppSessionsRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/vpn': typeof AppVpnRoute
   '/app/': typeof AppIndexRoute
   '/app/devices/$ip': typeof AppDevicesIpRoute
@@ -135,8 +180,13 @@ export interface FileRouteTypes {
     | '/app/capture'
     | '/app/devices'
     | '/app/graph'
+    | '/app/map'
     | '/app/overview'
+    | '/app/pcap'
+    | '/app/protocols'
+    | '/app/reports'
     | '/app/sessions'
+    | '/app/settings'
     | '/app/vpn'
     | '/app/'
     | '/app/devices/$ip'
@@ -148,8 +198,13 @@ export interface FileRouteTypes {
     | '/app/capture'
     | '/app/devices'
     | '/app/graph'
+    | '/app/map'
     | '/app/overview'
+    | '/app/pcap'
+    | '/app/protocols'
+    | '/app/reports'
     | '/app/sessions'
+    | '/app/settings'
     | '/app/vpn'
     | '/app'
     | '/app/devices/$ip'
@@ -162,8 +217,13 @@ export interface FileRouteTypes {
     | '/app/capture'
     | '/app/devices'
     | '/app/graph'
+    | '/app/map'
     | '/app/overview'
+    | '/app/pcap'
+    | '/app/protocols'
+    | '/app/reports'
     | '/app/sessions'
+    | '/app/settings'
     | '/app/vpn'
     | '/app/'
     | '/app/devices/$ip'
@@ -204,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVpnRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/sessions': {
       id: '/app/sessions'
       path: '/sessions'
@@ -211,11 +278,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSessionsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/reports': {
+      id: '/app/reports'
+      path: '/reports'
+      fullPath: '/app/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/protocols': {
+      id: '/app/protocols'
+      path: '/protocols'
+      fullPath: '/app/protocols'
+      preLoaderRoute: typeof AppProtocolsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/pcap': {
+      id: '/app/pcap'
+      path: '/pcap'
+      fullPath: '/app/pcap'
+      preLoaderRoute: typeof AppPcapRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/overview': {
       id: '/app/overview'
       path: '/overview'
       fullPath: '/app/overview'
       preLoaderRoute: typeof AppOverviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/map': {
+      id: '/app/map'
+      path: '/map'
+      fullPath: '/app/map'
+      preLoaderRoute: typeof AppMapRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/graph': {
@@ -281,8 +376,13 @@ interface AppRouteChildren {
   AppCaptureRoute: typeof AppCaptureRoute
   AppDevicesRoute: typeof AppDevicesRouteWithChildren
   AppGraphRoute: typeof AppGraphRoute
+  AppMapRoute: typeof AppMapRoute
   AppOverviewRoute: typeof AppOverviewRoute
+  AppPcapRoute: typeof AppPcapRoute
+  AppProtocolsRoute: typeof AppProtocolsRoute
+  AppReportsRoute: typeof AppReportsRoute
   AppSessionsRoute: typeof AppSessionsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppVpnRoute: typeof AppVpnRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -293,8 +393,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppCaptureRoute: AppCaptureRoute,
   AppDevicesRoute: AppDevicesRouteWithChildren,
   AppGraphRoute: AppGraphRoute,
+  AppMapRoute: AppMapRoute,
   AppOverviewRoute: AppOverviewRoute,
+  AppPcapRoute: AppPcapRoute,
+  AppProtocolsRoute: AppProtocolsRoute,
+  AppReportsRoute: AppReportsRoute,
   AppSessionsRoute: AppSessionsRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppVpnRoute: AppVpnRoute,
   AppIndexRoute: AppIndexRoute,
 }
