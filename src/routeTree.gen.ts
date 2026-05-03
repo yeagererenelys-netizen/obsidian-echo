@@ -17,6 +17,7 @@ import { Route as AppOverviewRouteImport } from './routes/app.overview'
 import { Route as AppGraphRouteImport } from './routes/app.graph'
 import { Route as AppDevicesRouteImport } from './routes/app.devices'
 import { Route as AppCaptureRouteImport } from './routes/app.capture'
+import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppDevicesIpRouteImport } from './routes/app.devices.$ip'
 
 const AppRoute = AppRouteImport.update({
@@ -59,6 +60,11 @@ const AppCaptureRoute = AppCaptureRouteImport.update({
   path: '/capture',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAlertsRoute = AppAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDevicesIpRoute = AppDevicesIpRouteImport.update({
   id: '/$ip',
   path: '/$ip',
@@ -68,6 +74,7 @@ const AppDevicesIpRoute = AppDevicesIpRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/app/alerts': typeof AppAlertsRoute
   '/app/capture': typeof AppCaptureRoute
   '/app/devices': typeof AppDevicesRouteWithChildren
   '/app/graph': typeof AppGraphRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app/alerts': typeof AppAlertsRoute
   '/app/capture': typeof AppCaptureRoute
   '/app/devices': typeof AppDevicesRouteWithChildren
   '/app/graph': typeof AppGraphRoute
@@ -90,6 +98,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/app/alerts': typeof AppAlertsRoute
   '/app/capture': typeof AppCaptureRoute
   '/app/devices': typeof AppDevicesRouteWithChildren
   '/app/graph': typeof AppGraphRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/app/alerts'
     | '/app/capture'
     | '/app/devices'
     | '/app/graph'
@@ -113,6 +123,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/app/alerts'
     | '/app/capture'
     | '/app/devices'
     | '/app/graph'
@@ -124,6 +135,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/app/alerts'
     | '/app/capture'
     | '/app/devices'
     | '/app/graph'
@@ -196,6 +208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCaptureRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/alerts': {
+      id: '/app/alerts'
+      path: '/alerts'
+      fullPath: '/app/alerts'
+      preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/devices/$ip': {
       id: '/app/devices/$ip'
       path: '/$ip'
@@ -219,6 +238,7 @@ const AppDevicesRouteWithChildren = AppDevicesRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppAlertsRoute: typeof AppAlertsRoute
   AppCaptureRoute: typeof AppCaptureRoute
   AppDevicesRoute: typeof AppDevicesRouteWithChildren
   AppGraphRoute: typeof AppGraphRoute
@@ -228,6 +248,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAlertsRoute: AppAlertsRoute,
   AppCaptureRoute: AppCaptureRoute,
   AppDevicesRoute: AppDevicesRouteWithChildren,
   AppGraphRoute: AppGraphRoute,
