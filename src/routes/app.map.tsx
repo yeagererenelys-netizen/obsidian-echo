@@ -51,7 +51,7 @@ function WorldMap() {
       <div className="grid grid-cols-12 gap-4">
         {/* Map */}
         <div className="col-span-9 ps-card !p-0 relative overflow-hidden" style={{ height: 560, background: "radial-gradient(ellipse at center, #050505, #000)" }}>
-          <VideoBackground src="/videos/features/FEAT_06_anim_web.mp4" opacity={0.08} />
+          <VideoBackground src="https://drive.google.com/uc?export=download&id=1esRJDztTgPvmCeP3LxBjk8jx-pcny8XD" opacity={0.08} />
 
           <svg viewBox="0 0 800 500" className="w-full h-full relative z-10">
             {/* Grid lines */}
@@ -124,7 +124,7 @@ function WorldMap() {
         {/* Sidebar */}
         <div className="col-span-3 space-y-4 relative">
           <div className="absolute inset-0 overflow-hidden rounded-lg" style={{ zIndex: 0 }}>
-            <VideoBackground src="/videos/backgrounds/BG_04_anim_web.mp4" opacity={0.08} />
+            <VideoBackground src="https://drive.google.com/uc?export=download&id=1lz0hm-PsphGgoENCl8r4IM0XRgo4FdE3" opacity={0.08} />
           </div>
 
           <div className="ps-card relative z-10">
