@@ -5,7 +5,7 @@ import appCss from "../styles.css?url";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-void px-4 relative overflow-hidden">
-      <VideoBackground src="/videos/brand/BRAND_04_anim_web.mp4" opacity={0.6} />
+      <VideoBackground src="https://drive.google.com/uc?export=download&id=15qGJ68EbTkt32FPbYZR9LYrzRdCbCrc8" opacity={0.6} />
       <div className="relative z-10 max-w-md text-center">
         <h1 className="display text-[120px] leading-none text-lime text-glow-lime">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-white">SIGNAL LOST</h2>

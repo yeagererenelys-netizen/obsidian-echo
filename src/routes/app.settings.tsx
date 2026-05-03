@@ -32,7 +32,7 @@ function Settings() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="/videos/brand/BRAND_02_anim_web.mp4" opacity={0.08} />
+        <VideoBackground src="https://drive.google.com/uc?export=download&id=1f5s3YNZH4BoAVcL4jKfG-LAWymIlg6Mb" opacity={0.08} />
       </div>
       <div className="relative z-10">
         <PageHeader title="SETTINGS" />
