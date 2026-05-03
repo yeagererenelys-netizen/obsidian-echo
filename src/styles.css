@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -130,3 +130,32 @@
 .nav-item.active { background: var(--lime-dim); color: var(--lime); box-shadow: inset 2px 0 0 var(--lime); }
 .nav-item.active svg { color: var(--lime); }
 .nav-cat { padding: 16px 16px 4px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ghost); font-weight: 600; }
+
+/* row flash on new packet */
+@keyframes flash-row {
+  0% { background: rgba(163,255,18,0.15); }
+  100% { background: transparent; }
+}
+
+/* pulsing red glow for stop button */
+@keyframes pulse-red-glow {
+  0%, 100% { box-shadow: 0 0 4px rgba(239,68,68,0.4); }
+  50% { box-shadow: 0 0 20px rgba(239,68,68,0.7); }
+}
+
+/* video container */
+.section-video-container { position: relative; overflow: hidden; }
+
+/* obsidian bg shorthand */
+.bg-obsidian { background: var(--obsidian); }
+
+/* danger button */
+.btn-danger { background: #ef4444; color: white; padding: 8px 16px; border-radius: 4px; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.btn-danger:hover { background: #dc2626; }
+
+/* Recharts dark theme fix */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(255,255,255,0.04);
+}
+
