@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppVpnRouteImport } from './routes/app.vpn'
 import { Route as AppSessionsRouteImport } from './routes/app.sessions'
 import { Route as AppOverviewRouteImport } from './routes/app.overview'
 import { Route as AppGraphRouteImport } from './routes/app.graph'
 import { Route as AppDevicesRouteImport } from './routes/app.devices'
 import { Route as AppCaptureRouteImport } from './routes/app.capture'
+import { Route as AppBeaconingRouteImport } from './routes/app.beaconing'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppDevicesIpRouteImport } from './routes/app.devices.$ip'
 
@@ -33,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppVpnRoute = AppVpnRouteImport.update({
+  id: '/vpn',
+  path: '/vpn',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSessionsRoute = AppSessionsRouteImport.update({
@@ -60,6 +67,11 @@ const AppCaptureRoute = AppCaptureRouteImport.update({
   path: '/capture',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBeaconingRoute = AppBeaconingRouteImport.update({
+  id: '/beaconing',
+  path: '/beaconing',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAlertsRoute = AppAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
@@ -75,22 +87,26 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/app/alerts': typeof AppAlertsRoute
+  '/app/beaconing': typeof AppBeaconingRoute
   '/app/capture': typeof AppCaptureRoute
   '/app/devices': typeof AppDevicesRouteWithChildren
   '/app/graph': typeof AppGraphRoute
   '/app/overview': typeof AppOverviewRoute
   '/app/sessions': typeof AppSessionsRoute
+  '/app/vpn': typeof AppVpnRoute
   '/app/': typeof AppIndexRoute
   '/app/devices/$ip': typeof AppDevicesIpRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/beaconing': typeof AppBeaconingRoute
   '/app/capture': typeof AppCaptureRoute
   '/app/devices': typeof AppDevicesRouteWithChildren
   '/app/graph': typeof AppGraphRoute
   '/app/overview': typeof AppOverviewRoute
   '/app/sessions': typeof AppSessionsRoute
+  '/app/vpn': typeof AppVpnRoute
   '/app': typeof AppIndexRoute
   '/app/devices/$ip': typeof AppDevicesIpRoute
 }
@@ -99,11 +115,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/app/alerts': typeof AppAlertsRoute
+  '/app/beaconing': typeof AppBeaconingRoute
   '/app/capture': typeof AppCaptureRoute
   '/app/devices': typeof AppDevicesRouteWithChildren
   '/app/graph': typeof AppGraphRoute
   '/app/overview': typeof AppOverviewRoute
   '/app/sessions': typeof AppSessionsRoute
+  '/app/vpn': typeof AppVpnRoute
   '/app/': typeof AppIndexRoute
   '/app/devices/$ip': typeof AppDevicesIpRoute
 }
@@ -113,22 +131,26 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/app/alerts'
+    | '/app/beaconing'
     | '/app/capture'
     | '/app/devices'
     | '/app/graph'
     | '/app/overview'
     | '/app/sessions'
+    | '/app/vpn'
     | '/app/'
     | '/app/devices/$ip'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/app/alerts'
+    | '/app/beaconing'
     | '/app/capture'
     | '/app/devices'
     | '/app/graph'
     | '/app/overview'
     | '/app/sessions'
+    | '/app/vpn'
     | '/app'
     | '/app/devices/$ip'
   id:
@@ -136,11 +158,13 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/app/alerts'
+    | '/app/beaconing'
     | '/app/capture'
     | '/app/devices'
     | '/app/graph'
     | '/app/overview'
     | '/app/sessions'
+    | '/app/vpn'
     | '/app/'
     | '/app/devices/$ip'
   fileRoutesById: FileRoutesById
@@ -171,6 +195,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/vpn': {
+      id: '/app/vpn'
+      path: '/vpn'
+      fullPath: '/app/vpn'
+      preLoaderRoute: typeof AppVpnRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/sessions': {
@@ -208,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCaptureRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/beaconing': {
+      id: '/app/beaconing'
+      path: '/beaconing'
+      fullPath: '/app/beaconing'
+      preLoaderRoute: typeof AppBeaconingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/alerts': {
       id: '/app/alerts'
       path: '/alerts'
@@ -239,21 +277,25 @@ const AppDevicesRouteWithChildren = AppDevicesRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAlertsRoute: typeof AppAlertsRoute
+  AppBeaconingRoute: typeof AppBeaconingRoute
   AppCaptureRoute: typeof AppCaptureRoute
   AppDevicesRoute: typeof AppDevicesRouteWithChildren
   AppGraphRoute: typeof AppGraphRoute
   AppOverviewRoute: typeof AppOverviewRoute
   AppSessionsRoute: typeof AppSessionsRoute
+  AppVpnRoute: typeof AppVpnRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAlertsRoute: AppAlertsRoute,
+  AppBeaconingRoute: AppBeaconingRoute,
   AppCaptureRoute: AppCaptureRoute,
   AppDevicesRoute: AppDevicesRouteWithChildren,
   AppGraphRoute: AppGraphRoute,
   AppOverviewRoute: AppOverviewRoute,
   AppSessionsRoute: AppSessionsRoute,
+  AppVpnRoute: AppVpnRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
