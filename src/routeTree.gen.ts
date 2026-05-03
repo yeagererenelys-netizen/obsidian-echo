@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppSessionsRouteImport } from './routes/app.sessions'
 import { Route as AppOverviewRouteImport } from './routes/app.overview'
 import { Route as AppCaptureRouteImport } from './routes/app.capture'
 
@@ -30,6 +31,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSessionsRoute = AppSessionsRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOverviewRoute = AppOverviewRouteImport.update({
   id: '/overview',
   path: '/overview',
@@ -46,12 +52,14 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/app/capture': typeof AppCaptureRoute
   '/app/overview': typeof AppOverviewRoute
+  '/app/sessions': typeof AppSessionsRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app/capture': typeof AppCaptureRoute
   '/app/overview': typeof AppOverviewRoute
+  '/app/sessions': typeof AppSessionsRoute
   '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -60,14 +68,28 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/app/capture': typeof AppCaptureRoute
   '/app/overview': typeof AppOverviewRoute
+  '/app/sessions': typeof AppSessionsRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/app/capture' | '/app/overview' | '/app/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/app/capture'
+    | '/app/overview'
+    | '/app/sessions'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app/capture' | '/app/overview' | '/app'
-  id: '__root__' | '/' | '/app' | '/app/capture' | '/app/overview' | '/app/'
+  to: '/' | '/app/capture' | '/app/overview' | '/app/sessions' | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/app/capture'
+    | '/app/overview'
+    | '/app/sessions'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -98,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/sessions': {
+      id: '/app/sessions'
+      path: '/sessions'
+      fullPath: '/app/sessions'
+      preLoaderRoute: typeof AppSessionsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/overview': {
       id: '/app/overview'
       path: '/overview'
@@ -118,12 +147,14 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppCaptureRoute: typeof AppCaptureRoute
   AppOverviewRoute: typeof AppOverviewRoute
+  AppSessionsRoute: typeof AppSessionsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppCaptureRoute: AppCaptureRoute,
   AppOverviewRoute: AppOverviewRoute,
+  AppSessionsRoute: AppSessionsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
