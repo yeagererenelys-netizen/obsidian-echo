@@ -9,38 +9,240 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppVpnRouteImport } from './routes/app.vpn'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppSessionsRouteImport } from './routes/app.sessions'
+import { Route as AppReportsRouteImport } from './routes/app.reports'
+import { Route as AppProtocolsRouteImport } from './routes/app.protocols'
+import { Route as AppPcapRouteImport } from './routes/app.pcap'
+import { Route as AppOverviewRouteImport } from './routes/app.overview'
+import { Route as AppMapRouteImport } from './routes/app.map'
+import { Route as AppGraphRouteImport } from './routes/app.graph'
+import { Route as AppDevicesRouteImport } from './routes/app.devices'
+import { Route as AppCaptureRouteImport } from './routes/app.capture'
+import { Route as AppBeaconingRouteImport } from './routes/app.beaconing'
+import { Route as AppAlertsRouteImport } from './routes/app.alerts'
+import { Route as AppDevicesIpRouteImport } from './routes/app.devices.$ip'
 
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppVpnRoute = AppVpnRouteImport.update({
+  id: '/vpn',
+  path: '/vpn',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSessionsRoute = AppSessionsRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProtocolsRoute = AppProtocolsRouteImport.update({
+  id: '/protocols',
+  path: '/protocols',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPcapRoute = AppPcapRouteImport.update({
+  id: '/pcap',
+  path: '/pcap',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOverviewRoute = AppOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMapRoute = AppMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGraphRoute = AppGraphRouteImport.update({
+  id: '/graph',
+  path: '/graph',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDevicesRoute = AppDevicesRouteImport.update({
+  id: '/devices',
+  path: '/devices',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCaptureRoute = AppCaptureRouteImport.update({
+  id: '/capture',
+  path: '/capture',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBeaconingRoute = AppBeaconingRouteImport.update({
+  id: '/beaconing',
+  path: '/beaconing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAlertsRoute = AppAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDevicesIpRoute = AppDevicesIpRouteImport.update({
+  id: '/$ip',
+  path: '/$ip',
+  getParentRoute: () => AppDevicesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/alerts': typeof AppAlertsRoute
+  '/app/beaconing': typeof AppBeaconingRoute
+  '/app/capture': typeof AppCaptureRoute
+  '/app/devices': typeof AppDevicesRouteWithChildren
+  '/app/graph': typeof AppGraphRoute
+  '/app/map': typeof AppMapRoute
+  '/app/overview': typeof AppOverviewRoute
+  '/app/pcap': typeof AppPcapRoute
+  '/app/protocols': typeof AppProtocolsRoute
+  '/app/reports': typeof AppReportsRoute
+  '/app/sessions': typeof AppSessionsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/vpn': typeof AppVpnRoute
+  '/app/': typeof AppIndexRoute
+  '/app/devices/$ip': typeof AppDevicesIpRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app/alerts': typeof AppAlertsRoute
+  '/app/beaconing': typeof AppBeaconingRoute
+  '/app/capture': typeof AppCaptureRoute
+  '/app/devices': typeof AppDevicesRouteWithChildren
+  '/app/graph': typeof AppGraphRoute
+  '/app/map': typeof AppMapRoute
+  '/app/overview': typeof AppOverviewRoute
+  '/app/pcap': typeof AppPcapRoute
+  '/app/protocols': typeof AppProtocolsRoute
+  '/app/reports': typeof AppReportsRoute
+  '/app/sessions': typeof AppSessionsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/vpn': typeof AppVpnRoute
+  '/app': typeof AppIndexRoute
+  '/app/devices/$ip': typeof AppDevicesIpRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/alerts': typeof AppAlertsRoute
+  '/app/beaconing': typeof AppBeaconingRoute
+  '/app/capture': typeof AppCaptureRoute
+  '/app/devices': typeof AppDevicesRouteWithChildren
+  '/app/graph': typeof AppGraphRoute
+  '/app/map': typeof AppMapRoute
+  '/app/overview': typeof AppOverviewRoute
+  '/app/pcap': typeof AppPcapRoute
+  '/app/protocols': typeof AppProtocolsRoute
+  '/app/reports': typeof AppReportsRoute
+  '/app/sessions': typeof AppSessionsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/vpn': typeof AppVpnRoute
+  '/app/': typeof AppIndexRoute
+  '/app/devices/$ip': typeof AppDevicesIpRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/app/alerts'
+    | '/app/beaconing'
+    | '/app/capture'
+    | '/app/devices'
+    | '/app/graph'
+    | '/app/map'
+    | '/app/overview'
+    | '/app/pcap'
+    | '/app/protocols'
+    | '/app/reports'
+    | '/app/sessions'
+    | '/app/settings'
+    | '/app/vpn'
+    | '/app/'
+    | '/app/devices/$ip'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/app/alerts'
+    | '/app/beaconing'
+    | '/app/capture'
+    | '/app/devices'
+    | '/app/graph'
+    | '/app/map'
+    | '/app/overview'
+    | '/app/pcap'
+    | '/app/protocols'
+    | '/app/reports'
+    | '/app/sessions'
+    | '/app/settings'
+    | '/app/vpn'
+    | '/app'
+    | '/app/devices/$ip'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/app/alerts'
+    | '/app/beaconing'
+    | '/app/capture'
+    | '/app/devices'
+    | '/app/graph'
+    | '/app/map'
+    | '/app/overview'
+    | '/app/pcap'
+    | '/app/protocols'
+    | '/app/reports'
+    | '/app/sessions'
+    | '/app/settings'
+    | '/app/vpn'
+    | '/app/'
+    | '/app/devices/$ip'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +250,165 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/vpn': {
+      id: '/app/vpn'
+      path: '/vpn'
+      fullPath: '/app/vpn'
+      preLoaderRoute: typeof AppVpnRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/sessions': {
+      id: '/app/sessions'
+      path: '/sessions'
+      fullPath: '/app/sessions'
+      preLoaderRoute: typeof AppSessionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/reports': {
+      id: '/app/reports'
+      path: '/reports'
+      fullPath: '/app/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/protocols': {
+      id: '/app/protocols'
+      path: '/protocols'
+      fullPath: '/app/protocols'
+      preLoaderRoute: typeof AppProtocolsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/pcap': {
+      id: '/app/pcap'
+      path: '/pcap'
+      fullPath: '/app/pcap'
+      preLoaderRoute: typeof AppPcapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/overview': {
+      id: '/app/overview'
+      path: '/overview'
+      fullPath: '/app/overview'
+      preLoaderRoute: typeof AppOverviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/map': {
+      id: '/app/map'
+      path: '/map'
+      fullPath: '/app/map'
+      preLoaderRoute: typeof AppMapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/graph': {
+      id: '/app/graph'
+      path: '/graph'
+      fullPath: '/app/graph'
+      preLoaderRoute: typeof AppGraphRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/devices': {
+      id: '/app/devices'
+      path: '/devices'
+      fullPath: '/app/devices'
+      preLoaderRoute: typeof AppDevicesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/capture': {
+      id: '/app/capture'
+      path: '/capture'
+      fullPath: '/app/capture'
+      preLoaderRoute: typeof AppCaptureRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/beaconing': {
+      id: '/app/beaconing'
+      path: '/beaconing'
+      fullPath: '/app/beaconing'
+      preLoaderRoute: typeof AppBeaconingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/alerts': {
+      id: '/app/alerts'
+      path: '/alerts'
+      fullPath: '/app/alerts'
+      preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/devices/$ip': {
+      id: '/app/devices/$ip'
+      path: '/$ip'
+      fullPath: '/app/devices/$ip'
+      preLoaderRoute: typeof AppDevicesIpRouteImport
+      parentRoute: typeof AppDevicesRoute
+    }
   }
 }
 
+interface AppDevicesRouteChildren {
+  AppDevicesIpRoute: typeof AppDevicesIpRoute
+}
+
+const AppDevicesRouteChildren: AppDevicesRouteChildren = {
+  AppDevicesIpRoute: AppDevicesIpRoute,
+}
+
+const AppDevicesRouteWithChildren = AppDevicesRoute._addFileChildren(
+  AppDevicesRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppAlertsRoute: typeof AppAlertsRoute
+  AppBeaconingRoute: typeof AppBeaconingRoute
+  AppCaptureRoute: typeof AppCaptureRoute
+  AppDevicesRoute: typeof AppDevicesRouteWithChildren
+  AppGraphRoute: typeof AppGraphRoute
+  AppMapRoute: typeof AppMapRoute
+  AppOverviewRoute: typeof AppOverviewRoute
+  AppPcapRoute: typeof AppPcapRoute
+  AppProtocolsRoute: typeof AppProtocolsRoute
+  AppReportsRoute: typeof AppReportsRoute
+  AppSessionsRoute: typeof AppSessionsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppVpnRoute: typeof AppVpnRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAlertsRoute: AppAlertsRoute,
+  AppBeaconingRoute: AppBeaconingRoute,
+  AppCaptureRoute: AppCaptureRoute,
+  AppDevicesRoute: AppDevicesRouteWithChildren,
+  AppGraphRoute: AppGraphRoute,
+  AppMapRoute: AppMapRoute,
+  AppOverviewRoute: AppOverviewRoute,
+  AppPcapRoute: AppPcapRoute,
+  AppProtocolsRoute: AppProtocolsRoute,
+  AppReportsRoute: AppReportsRoute,
+  AppSessionsRoute: AppSessionsRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppVpnRoute: AppVpnRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
