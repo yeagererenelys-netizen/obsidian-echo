@@ -14,7 +14,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSessionsRouteImport } from './routes/app.sessions'
 import { Route as AppOverviewRouteImport } from './routes/app.overview'
+import { Route as AppGraphRouteImport } from './routes/app.graph'
+import { Route as AppDevicesRouteImport } from './routes/app.devices'
 import { Route as AppCaptureRouteImport } from './routes/app.capture'
+import { Route as AppDevicesIpRouteImport } from './routes/app.devices.$ip'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -41,35 +44,59 @@ const AppOverviewRoute = AppOverviewRouteImport.update({
   path: '/overview',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGraphRoute = AppGraphRouteImport.update({
+  id: '/graph',
+  path: '/graph',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDevicesRoute = AppDevicesRouteImport.update({
+  id: '/devices',
+  path: '/devices',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCaptureRoute = AppCaptureRouteImport.update({
   id: '/capture',
   path: '/capture',
   getParentRoute: () => AppRoute,
+} as any)
+const AppDevicesIpRoute = AppDevicesIpRouteImport.update({
+  id: '/$ip',
+  path: '/$ip',
+  getParentRoute: () => AppDevicesRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/app/capture': typeof AppCaptureRoute
+  '/app/devices': typeof AppDevicesRouteWithChildren
+  '/app/graph': typeof AppGraphRoute
   '/app/overview': typeof AppOverviewRoute
   '/app/sessions': typeof AppSessionsRoute
   '/app/': typeof AppIndexRoute
+  '/app/devices/$ip': typeof AppDevicesIpRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app/capture': typeof AppCaptureRoute
+  '/app/devices': typeof AppDevicesRouteWithChildren
+  '/app/graph': typeof AppGraphRoute
   '/app/overview': typeof AppOverviewRoute
   '/app/sessions': typeof AppSessionsRoute
   '/app': typeof AppIndexRoute
+  '/app/devices/$ip': typeof AppDevicesIpRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/app/capture': typeof AppCaptureRoute
+  '/app/devices': typeof AppDevicesRouteWithChildren
+  '/app/graph': typeof AppGraphRoute
   '/app/overview': typeof AppOverviewRoute
   '/app/sessions': typeof AppSessionsRoute
   '/app/': typeof AppIndexRoute
+  '/app/devices/$ip': typeof AppDevicesIpRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -77,19 +104,33 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/app/capture'
+    | '/app/devices'
+    | '/app/graph'
     | '/app/overview'
     | '/app/sessions'
     | '/app/'
+    | '/app/devices/$ip'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app/capture' | '/app/overview' | '/app/sessions' | '/app'
+  to:
+    | '/'
+    | '/app/capture'
+    | '/app/devices'
+    | '/app/graph'
+    | '/app/overview'
+    | '/app/sessions'
+    | '/app'
+    | '/app/devices/$ip'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/app/capture'
+    | '/app/devices'
+    | '/app/graph'
     | '/app/overview'
     | '/app/sessions'
     | '/app/'
+    | '/app/devices/$ip'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -134,6 +175,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOverviewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/graph': {
+      id: '/app/graph'
+      path: '/graph'
+      fullPath: '/app/graph'
+      preLoaderRoute: typeof AppGraphRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/devices': {
+      id: '/app/devices'
+      path: '/devices'
+      fullPath: '/app/devices'
+      preLoaderRoute: typeof AppDevicesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/capture': {
       id: '/app/capture'
       path: '/capture'
@@ -141,11 +196,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCaptureRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/devices/$ip': {
+      id: '/app/devices/$ip'
+      path: '/$ip'
+      fullPath: '/app/devices/$ip'
+      preLoaderRoute: typeof AppDevicesIpRouteImport
+      parentRoute: typeof AppDevicesRoute
+    }
   }
 }
 
+interface AppDevicesRouteChildren {
+  AppDevicesIpRoute: typeof AppDevicesIpRoute
+}
+
+const AppDevicesRouteChildren: AppDevicesRouteChildren = {
+  AppDevicesIpRoute: AppDevicesIpRoute,
+}
+
+const AppDevicesRouteWithChildren = AppDevicesRoute._addFileChildren(
+  AppDevicesRouteChildren,
+)
+
 interface AppRouteChildren {
   AppCaptureRoute: typeof AppCaptureRoute
+  AppDevicesRoute: typeof AppDevicesRouteWithChildren
+  AppGraphRoute: typeof AppGraphRoute
   AppOverviewRoute: typeof AppOverviewRoute
   AppSessionsRoute: typeof AppSessionsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -153,6 +229,8 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCaptureRoute: AppCaptureRoute,
+  AppDevicesRoute: AppDevicesRouteWithChildren,
+  AppGraphRoute: AppGraphRoute,
   AppOverviewRoute: AppOverviewRoute,
   AppSessionsRoute: AppSessionsRoute,
   AppIndexRoute: AppIndexRoute,
