@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { VideoBackground } from "@/components/ps/VideoBackground";
 import {
   Activity, Layers, Share2, Clock, Lock, Globe, Search, Cpu, FileArchive, Github, ArrowRight, ChevronDown
 } from "lucide-react";
@@ -16,15 +17,15 @@ export const Route = createFileRoute("/")({
 });
 
 const FEATURES = [
-  { icon: Activity, title: "Live Packet Capture", body: "Capture live from any interface or import any .pcap. Real-time BPF filtering, 1M+ packets/min throughput.", tag: "Scapy · PyShark" },
-  { icon: Layers, title: "Session Reconstruction", body: "Reassemble raw TCP streams into readable HTTP exchanges, DNS chains, SMTP conversations — automatically.", tag: "5-Tuple Flow" },
-  { icon: Share2, title: "Communication Graph", body: "Force-directed live node graph. Every device, every connection, visualized in real time.", tag: "D3.js Force Graph" },
-  { icon: Clock, title: "Beaconing Detection", body: "Detect C2 malware by measuring inter-packet timing regularity. Flag suspicious automation in seconds.", tag: "ML · scipy", badge: "KILLER FEATURE" },
-  { icon: Lock, title: "VPN & Proxy Detection", body: "Identify obfuscation via TTL anomalies, SOCKS5 handshakes, ASN fingerprinting, DNS-IP mismatches.", tag: "MaxMind · ASN DB" },
-  { icon: Globe, title: "GeoIP World Map", body: "Every external connection plotted on a live globe. Tor exit nodes and threat regions highlighted.", tag: "MaxMind GeoLite2" },
-  { icon: Search, title: "Deep Protocol Inspection", body: "HTTP, DNS, TLS, SMTP, FTP — parsed and readable. Not hex dumps. Human-readable forensic records.", tag: "HTTP · DNS · TLS" },
-  { icon: Cpu, title: "Behavioral Device Profiling", body: "Per-device baselines. Anomalies flagged against device's own history — dramatically fewer false positives.", tag: "Isolation Forest" },
-  { icon: FileArchive, title: "Evidence Packaging", body: "Export any flagged session as a filtered .pcap + JSON report. Opens in Wireshark. Forensic-grade.", tag: "dpkt · JSON" },
+  { icon: Activity, title: "Live Packet Capture", body: "Capture live from any interface or import any .pcap. Real-time BPF filtering, 1M+ packets/min throughput.", tag: "Scapy · PyShark", video: "/videos/features/FEAT_01_anim_web.mp4" },
+  { icon: Layers, title: "Session Reconstruction", body: "Reassemble raw TCP streams into readable HTTP exchanges, DNS chains, SMTP conversations — automatically.", tag: "5-Tuple Flow", video: "/videos/features/FEAT_02_anim_web.mp4" },
+  { icon: Share2, title: "Communication Graph", body: "Force-directed live node graph. Every device, every connection, visualized in real time.", tag: "D3.js Force Graph", video: "/videos/features/FEAT_03_anim_web.mp4" },
+  { icon: Clock, title: "Beaconing Detection", body: "Detect C2 malware by measuring inter-packet timing regularity. Flag suspicious automation in seconds.", tag: "ML · scipy", badge: "KILLER FEATURE", video: "/videos/features/FEAT_04_anim_web.mp4" },
+  { icon: Lock, title: "VPN & Proxy Detection", body: "Identify obfuscation via TTL anomalies, SOCKS5 handshakes, ASN fingerprinting, DNS-IP mismatches.", tag: "MaxMind · ASN DB", video: "/videos/features/FEAT_05_anim_web.mp4" },
+  { icon: Globe, title: "GeoIP World Map", body: "Every external connection plotted on a live globe. Tor exit nodes and threat regions highlighted.", tag: "MaxMind GeoLite2", video: "/videos/features/FEAT_06_anim_web.mp4" },
+  { icon: Search, title: "Deep Protocol Inspection", body: "HTTP, DNS, TLS, SMTP, FTP — parsed and readable. Not hex dumps. Human-readable forensic records.", tag: "HTTP · DNS · TLS", video: "/videos/features/FEAT_07_anim_web.mp4" },
+  { icon: Cpu, title: "Behavioral Device Profiling", body: "Per-device baselines. Anomalies flagged against device's own history — dramatically fewer false positives.", tag: "Isolation Forest", video: "/videos/features/FEAT_08_anim_web.mp4" },
+  { icon: FileArchive, title: "Evidence Packaging", body: "Export any flagged session as a filtered .pcap + JSON report. Opens in Wireshark. Forensic-grade.", tag: "dpkt · JSON", video: "/videos/features/FEAT_01_anim_web.mp4" },
 ];
 
 function Landing() {
@@ -32,9 +33,10 @@ function Landing() {
     <div className="bg-void text-white min-h-screen">
       {/* Hero */}
       <section className="section-video-container min-h-screen flex items-center justify-center px-6 relative">
-        <div className="absolute inset-0 z-0 hex-bg opacity-40" />
-        <div className="absolute inset-0 z-0" style={{ background: "radial-gradient(ellipse at center, rgba(163,255,18,0.08), transparent 60%)" }} />
-        <div className="absolute inset-x-0 bottom-0 h-1/2 z-[1]" style={{ background: "linear-gradient(to top, #000 0%, transparent 100%)" }} />
+        <VideoBackground src="/videos/hero/HERO_01_anim_web.mp4" opacity={0.4} />
+        <div className="absolute inset-0 z-[1] hex-bg opacity-40" />
+        <div className="absolute inset-0 z-[1]" style={{ background: "radial-gradient(ellipse at center, rgba(163,255,18,0.08), transparent 60%)" }} />
+        <div className="absolute inset-x-0 bottom-0 h-1/2 z-[2]" style={{ background: "linear-gradient(to top, #000 0%, transparent 100%)" }} />
         <div className="relative z-10 text-center max-w-3xl">
           <div className="fade-in delay-1 inline-block px-3 py-1 border border-lime-border rounded-sm">
             <span className="mono text-[11px] tracking-[0.3em] text-lime">[ NETWORK FORENSICS ENGINE ]</span>
@@ -84,7 +86,8 @@ function Landing() {
 
       {/* Features */}
       <section className="py-24 px-6 relative section-video-container">
-        <div className="absolute inset-0 z-0 hex-bg opacity-30" />
+        <VideoBackground src="/videos/backgrounds/BG_05_anim_web.mp4" opacity={0.05} />
+        <div className="absolute inset-0 z-[1] hex-bg opacity-30" />
         <div className="relative z-10 max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="display text-white" style={{ fontSize: "64px", lineHeight: 1 }}>EVERY TOOL YOU NEED</h2>
@@ -94,14 +97,17 @@ function Landing() {
             {FEATURES.map(f => {
               const Icon = f.icon;
               return (
-                <div key={f.title} className="ps-card group hover:border-lime-border hover:-translate-y-0.5 transition-all relative overflow-hidden">
-                  <Icon size={24} className="text-lime mb-4" />
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-white font-semibold text-base">{f.title}</h3>
-                    {f.badge && <span className="badge badge-lime">{f.badge}</span>}
+                <div key={f.title} className="ps-card group hover:border-lime-border hover:-translate-y-0.5 transition-all relative overflow-hidden section-video-container">
+                  <VideoBackground src={f.video} opacity={0.08} className="group-hover:!opacity-25 transition-opacity duration-300" />
+                  <div className="relative z-10">
+                    <Icon size={24} className="text-lime mb-4" />
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-white font-semibold text-base">{f.title}</h3>
+                      {f.badge && <span className="badge badge-lime">{f.badge}</span>}
+                    </div>
+                    <p className="text-sm text-silver leading-relaxed">{f.body}</p>
+                    <div className="mt-4 mono text-[10px] text-ghost">[ {f.tag} ]</div>
                   </div>
-                  <p className="text-sm text-silver leading-relaxed">{f.body}</p>
-                  <div className="mt-4 mono text-[10px] text-ghost">[ {f.tag} ]</div>
                 </div>
               );
             })}
@@ -111,7 +117,8 @@ function Landing() {
 
       {/* CTA */}
       <section className="section-video-container py-24 px-6 border-y border-graphite relative">
-        <div className="absolute inset-0 z-0" style={{ background: "radial-gradient(ellipse at center, rgba(239,68,68,0.08), transparent 70%)" }} />
+        <VideoBackground src="/videos/hero/HERO_03_anim_web.mp4" opacity={0.15} />
+        <div className="absolute inset-0 z-[1]" style={{ background: "radial-gradient(ellipse at center, rgba(239,68,68,0.08), transparent 70%)" }} />
         <div className="relative z-10 text-center max-w-3xl mx-auto">
           <h2 className="display text-white" style={{ fontSize: "80px", lineHeight: 1 }}>CATCH THE BEACON</h2>
           <p className="text-silver mt-4 text-base">

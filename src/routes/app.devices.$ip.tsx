@@ -1,42 +1,178 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PageHeader, StatCard } from "@/components/ps/Shell";
+import { StatCard } from "@/components/ps/Shell";
+import { VideoBackground } from "@/components/ps/VideoBackground";
+import { MOCK_DEVICES, formatBytes } from "@/lib/mockData";
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from "recharts";
+import { Download, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/app/devices/$ip")({ component: DeviceDetail });
 
 function DeviceDetail() {
   const { ip } = Route.useParams();
+  const device = MOCK_DEVICES.find(d => d.ip === ip) || MOCK_DEVICES[0];
+
+  // Traffic timeline data
+  const trafficData = Array.from({ length: 60 }, (_, i) => ({
+    min: i,
+    packets: Math.floor(device.totalPackets / 60 + (Math.sin(i / 5) * 200 + Math.random() * 100)),
+    baseline: Math.floor(device.totalPackets / 60),
+  }));
+
+  // Protocol donut
+  const protoData = Object.entries(device.topProtos).map(([name, value]) => ({ name, value }));
+  const COLORS = ["#3b82f6", "#a3ff12", "#eab308", "#ef4444", "#a0aec0"];
+
+  // External destinations
+  const destinations = [
+    { ip: "142.250.80.100", asn: "AS15169 Google", country: "🇺🇸", bytes: 42000000, firstSeen: "08:12", lastSeen: "now", threat: false },
+    { ip: "167.88.162.34", asn: "AS??? Unknown", country: "🇺🇸", bytes: 8920000, firstSeen: "11:55", lastSeen: "now", threat: true },
+    { ip: "185.220.101.45", asn: "AS60729 Tor", country: "🇩🇪", bytes: 847000000, firstSeen: "10:30", lastSeen: "now", threat: true },
+    { ip: "104.16.123.96", asn: "AS13335 Cloudflare", country: "🇺🇸", bytes: 18000000, firstSeen: "08:15", lastSeen: "now", threat: false },
+    { ip: "151.101.1.140", asn: "AS54113 Fastly", country: "🇺🇸", bytes: 12000000, firstSeen: "09:00", lastSeen: "14:20", threat: false },
+  ];
+
+  // Anomalies
+  const anomalies = device.anomaly > 60 ? [
+    { sev: "critical", time: "12:42:18", desc: "Beaconing pattern detected — 30s intervals to 167.88.162.34" },
+    { sev: "warn", time: "12:38:11", desc: "Suspicious DNS query to update.verysuspicious-domain.cc" },
+    { sev: "warn", time: "11:55:02", desc: "Unusual outbound volume spike — 3x baseline" },
+  ] : [
+    { sev: "info", time: "14:00:00", desc: "Normal traffic patterns — within baseline" },
+  ];
+
+  const exportReport = () => {
+    const report = JSON.stringify({ device, trafficData, destinations, anomalies }, null, 2);
+    const blob = new Blob([report], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `device-report-${ip}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div>
-      <Link to="/app/devices" className="text-xs text-ghost hover:text-lime">← All devices</Link>
-      <div className="mt-2 mb-6 flex items-center justify-between">
-        <div>
-          <div className="micro">DEVICE</div>
-          <h1 className="display text-[48px] text-white leading-none">{ip}</h1>
-          <div className="text-xs text-ghost mt-1">workstation-04 · MAC 4c:cc:6a:bb:11:22 · seen 14h</div>
-        </div>
-        <div className="flex flex-col items-center">
-          <svg viewBox="0 0 80 80" width="100" height="100">
-            <circle cx={40} cy={40} r={32} fill="none" stroke="#222" strokeWidth={6} />
-            <circle cx={40} cy={40} r={32} fill="none" stroke="#a3ff12" strokeWidth={6} strokeDasharray={`${0.78 * 200} 200`} transform="rotate(-90 40 40)" />
-          </svg>
-          <div className="display text-2xl text-lime -mt-16">78</div>
-          <div className="micro mt-12">RISK SCORE</div>
-        </div>
+    <div className="relative">
+      <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
+        <VideoBackground src="/videos/backgrounds/BG_02_anim_web.mp4" opacity={0.05} />
       </div>
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <StatCard label="Sessions" value="412" />
-        <StatCard label="Data Out" value="2.4" color="lime" trend="GB" hero />
-        <StatCard label="Anomalies" value="3" color="threat" />
-        <StatCard label="Uptime" value="14h" />
-      </div>
-      <div className="ps-card">
-        <h3 className="display text-xl mb-3">ACTIVITY HEATMAP — 7 DAYS</h3>
-        <div className="grid grid-cols-24 gap-px" style={{ gridTemplateColumns: "repeat(24,1fr)" }}>
-          {Array.from({ length: 168 }).map((_, i) => {
-            const v = Math.random();
-            return <div key={i} className="aspect-square rounded-sm" style={{ background: `rgba(163,255,18,${v * 0.9})` }} />;
-          })}
+      <div className="relative z-10">
+        <Link to="/app/devices" className="text-xs text-ghost hover:text-lime flex items-center gap-1 mb-4">
+          <ArrowLeft size={12} /> All devices
+        </Link>
+
+        {/* Hero */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="micro">DEVICE PROFILE</div>
+            <h1 className="display text-[60px] text-white leading-none">{ip}</h1>
+            <div className="text-sm text-silver mt-1">{device.name} · {device.model}</div>
+            <div className="mono text-xs text-ghost mt-1">{device.mac} · First seen: {device.firstSeen} · Last seen: {device.lastSeen}</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <svg viewBox="0 0 100 100" width={120} height={120}>
+              <circle cx={50} cy={50} r={42} fill="none" stroke="#222" strokeWidth={6} />
+              <circle cx={50} cy={50} r={42} fill="none"
+                stroke={device.anomaly > 80 ? "#ef4444" : device.anomaly > 60 ? "#eab308" : "#a3ff12"}
+                strokeWidth={6}
+                strokeDasharray={`${(device.anomaly / 100) * 264} 264`}
+                transform="rotate(-90 50 50)"
+                style={{ transition: "stroke-dasharray 1s" }}
+              />
+            </svg>
+            <div className="display text-[32px] -mt-20" style={{ color: device.anomaly > 80 ? "#ef4444" : device.anomaly > 60 ? "#eab308" : "#a3ff12" }}>
+              {device.anomaly}
+            </div>
+            <div className="micro mt-12">ANOMALY SCORE</div>
+          </div>
         </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <StatCard label="Total Packets" value={device.totalPackets.toLocaleString()} />
+          <StatCard label="Total Bytes" value={formatBytes(device.totalBytes)} color="lime" hero />
+          <StatCard label="Active Sessions" value={String(device.sessions)} />
+          <StatCard label="Unique Destinations" value={String(device.uniqueDests)} />
+        </div>
+
+        {/* Traffic timeline */}
+        <div className="ps-card mb-6">
+          <h3 className="display text-xl mb-4">TRAFFIC TIMELINE — LAST HOUR</h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={trafficData}>
+              <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis dataKey="min" stroke="#4a5568" fontSize={10} fontFamily="JetBrains Mono" />
+              <YAxis stroke="#4a5568" fontSize={10} fontFamily="JetBrains Mono" />
+              <Tooltip contentStyle={{ background: "#080808", border: "1px solid #222", fontFamily: "JetBrains Mono", fontSize: 11 }} />
+              <Area type="monotone" dataKey="baseline" stroke="#444" strokeDasharray="4 4" fill="none" />
+              <Area type="monotone" dataKey="packets" stroke="#a3ff12" fill="rgba(163,255,18,0.1)" strokeWidth={1.5} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="grid grid-cols-12 gap-4 mb-6">
+          {/* Protocol donut */}
+          <div className="col-span-4 ps-card">
+            <h3 className="display text-xl mb-4">PROTOCOL DISTRIBUTION</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={protoData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2}>
+                  {protoData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ background: "#080808", border: "1px solid #222", fontFamily: "JetBrains Mono", fontSize: 11 }} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {protoData.map((p, i) => (
+                <span key={p.name} className="mono text-[10px]" style={{ color: COLORS[i % COLORS.length] }}>● {p.name} {p.value}%</span>
+              ))}
+            </div>
+          </div>
+
+          {/* External destinations */}
+          <div className="col-span-8 ps-card !p-0">
+            <div className="p-4 border-b border-graphite">
+              <h3 className="display text-xl">TOP EXTERNAL DESTINATIONS</h3>
+            </div>
+            <table className="ps-table">
+              <thead><tr><th>IP</th><th>ASN</th><th>Country</th><th>Bytes</th><th>First</th><th>Last</th><th>Threat</th></tr></thead>
+              <tbody>
+                {destinations.map(d => (
+                  <tr key={d.ip} style={d.threat ? { boxShadow: "inset 2px 0 0 #ef4444" } : undefined}>
+                    <td className="text-white">{d.ip}</td>
+                    <td>{d.asn}</td>
+                    <td>{d.country}</td>
+                    <td>{formatBytes(d.bytes)}</td>
+                    <td>{d.firstSeen}</td>
+                    <td>{d.lastSeen}</td>
+                    <td>{d.threat ? <span className="badge badge-threat">THREAT</span> : <span className="badge badge-safe">CLEAN</span>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Anomalies */}
+        <div className="ps-card mb-6">
+          <h3 className="display text-xl mb-4">BEHAVIORAL ANOMALIES</h3>
+          <div className="space-y-2">
+            {anomalies.map((a, i) => (
+              <div key={i} className={`flex items-center gap-3 p-3 rounded border-l-2 ${a.sev === "critical" ? "border-threat bg-threat-dim/30" : a.sev === "warn" ? "border-warn bg-warn-dim/20" : "border-safe bg-safe-dim/20"}`}>
+                <span className={`dot ${a.sev === "critical" ? "dot-threat" : a.sev === "warn" ? "dot-warn" : "dot-safe"}`} />
+                <div className="flex-1">
+                  <div className="text-sm text-white">{a.desc}</div>
+                  <div className="mono text-[10px] text-ghost mt-1">{a.time}</div>
+                </div>
+                <button className="btn btn-secondary !text-xs">Inspect</button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button onClick={exportReport} className="btn btn-primary">
+          <Download size={14} /> Export Device Report
+        </button>
       </div>
     </div>
   );
