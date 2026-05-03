@@ -78,7 +78,7 @@ function Beaconing() {
     <div className="relative">
       {/* Hero */}
       <div className="ps-card !p-8 mb-6 relative overflow-hidden">
-        <VideoBackground src="/videos/features/FEAT_04_anim_web.mp4" opacity={0.15} />
+        <VideoBackground src="https://drive.google.com/uc?export=download&id=1FTuD1bsR3sedbq_NwKEynFfxsDinW5_Z" opacity={0.15} />
         <div className="relative z-10">
           <h1 className="display text-[64px] text-lime leading-none text-glow-lime">BEACONING DETECTOR</h1>
           <p className="text-silver mt-2">Inter-packet timing analysis · Detects C2 callbacks via regularity scoring</p>
@@ -101,7 +101,7 @@ function Beaconing() {
       {/* BG video */}
       <div className="relative">
         <div className="absolute inset-0 overflow-hidden rounded-lg" style={{ zIndex: 0 }}>
-          <VideoBackground src="/videos/backgrounds/BG_03_anim_web.mp4" opacity={0.04} />
+          <VideoBackground src="https://drive.google.com/uc?export=download&id=1xP_EELoO_Fswsq55f0wKRAupEXbRHm_t" opacity={0.04} />
         </div>
 
         {/* Table */}

@@ -71,7 +71,7 @@ function Graph() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="/videos/features/FEAT_03_anim_web.mp4" opacity={0.06} />
+        <VideoBackground src="https://drive.google.com/uc?export=download&id=1A3hkNGgUSkRG1o92B7FGUJTwvASSIOES" opacity={0.06} />
       </div>
       <div className="relative z-10">
         <PageHeader title="COMMUNICATION GRAPH" subtitle={`Force-directed live · ${MOCK_GRAPH_NODES.length} nodes · ${filteredEdges.length} edges`} />
@@ -92,7 +92,7 @@ function Graph() {
 
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-9 ps-card !p-0 overflow-hidden relative" style={{ height: 620, background: "#000" }}>
-            <VideoBackground src="/videos/backgrounds/BG_02_anim_web.mp4" opacity={0.05} />
+            <VideoBackground src="https://drive.google.com/uc?export=download&id=1KewMdVzeXhXCGVfzVhSiTjjZmhV4-dQq" opacity={0.05} />
             <div className="absolute top-3 left-3 right-3 z-20 px-3 py-2 rounded border border-threat/40 bg-threat-dim flex items-center gap-2">
               <span className="dot dot-threat" />
               <span className="text-sm text-white">{MOCK_GRAPH_EDGES.filter(e => e.threatLevel === 2).length} critical anomalies detected</span>
