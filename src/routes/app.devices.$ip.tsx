@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { StatCard } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
 import { VIDEOS } from "@/config/videoConfig";
-import { formatBytes, MOCK_DEVICES } from "@/lib/mockData";
+import { formatBytes } from "@/lib/mockData";
+import { useDeviceProfiles } from "@/hooks/useDeviceProfiles";
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from "recharts";
 import { Download, ArrowLeft } from "lucide-react";
 
@@ -10,17 +11,9 @@ export const Route = createFileRoute("/app/devices/$ip")({ component: DeviceDeta
 
 function DeviceDetail() {
   const { ip } = Route.useParams();
-  const device = MOCK_DEVICES.find(d => d.ip === ip) || MOCK_DEVICES[0];
+  const { profiles } = useDeviceProfiles();
+  const selectedDevice = profiles.find(d => d.ip === ip) ?? null;
 
-  // Traffic timeline data
-  const trafficData = Array.from({ length: 60 }, (_, i) => ({
-    min: i,
-    packets: Math.floor(device.totalPackets / 60 + (Math.sin(i / 5) * 200 + Math.random() * 100)),
-    baseline: Math.floor(device.totalPackets / 60),
-  }));
-
-  // Protocol donut
-  const protoData = Object.entries(device.topProtos).map(([name, value]) => ({ name, value }));
   const COLORS = ["#3b82f6", "#a3ff12", "#eab308", "#ef4444", "#a0aec0"];
 
   // External destinations
@@ -42,7 +35,7 @@ function DeviceDetail() {
   ];
 
   const exportReport = () => {
-    const report = JSON.stringify({ device, trafficData, destinations, anomalies }, null, 2);
+    const report = JSON.stringify({ selectedDevice, destinations, anomalies }, null, 2);
     const blob = new Blob([report], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -67,22 +60,22 @@ function DeviceDetail() {
           <div>
             <div className="micro">DEVICE PROFILE</div>
             <h1 className="display text-[60px] text-white leading-none">{ip}</h1>
-            <div className="text-sm text-silver mt-1">{device.name} · {device.model}</div>
-            <div className="mono text-xs text-ghost mt-1">{device.mac} · First seen: {device.firstSeen} · Last seen: {device.lastSeen}</div>
+            <div className="text-sm text-silver mt-1">{selectedDevice?.hostname}</div>
+            <div className="mono text-xs text-ghost mt-1">Last seen: {selectedDevice ? new Date(selectedDevice.lastSeen).toLocaleTimeString() : "-"}</div>
           </div>
           <div className="flex flex-col items-center">
             <svg viewBox="0 0 100 100" width={120} height={120}>
               <circle cx={50} cy={50} r={42} fill="none" stroke="#222" strokeWidth={6} />
               <circle cx={50} cy={50} r={42} fill="none"
-                stroke={device.anomaly > 80 ? "#ef4444" : device.anomaly > 60 ? "#eab308" : "#a3ff12"}
+                stroke={!selectedDevice ? "#222" : selectedDevice.anomalyScore >= 85 ? "#ef4444" : selectedDevice.anomalyScore >= 65 ? "#eab308" : "#a3ff12"}
                 strokeWidth={6}
-                strokeDasharray={`${(device.anomaly / 100) * 264} 264`}
+                strokeDasharray={`${((selectedDevice?.anomalyScore ?? 0) / 100) * 264} 264`}
                 transform="rotate(-90 50 50)"
                 style={{ transition: "stroke-dasharray 1s" }}
               />
             </svg>
-            <div className="display text-[32px] -mt-20" style={{ color: device.anomaly > 80 ? "#ef4444" : device.anomaly > 60 ? "#eab308" : "#a3ff12" }}>
-              {device.anomaly}
+            <div className="display text-[32px] -mt-20" style={{ color: !selectedDevice ? "#222" : selectedDevice.anomalyScore >= 85 ? "#ef4444" : selectedDevice.anomalyScore >= 65 ? "#eab308" : "#a3ff12" }}>
+              {selectedDevice?.anomalyScore ?? 0}
             </div>
             <div className="micro mt-12">ANOMALY SCORE</div>
           </div>
@@ -90,23 +83,24 @@ function DeviceDetail() {
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <StatCard label="Total Packets" value={device.totalPackets.toLocaleString()} />
-          <StatCard label="Total Bytes" value={formatBytes(device.totalBytes)} color="lime" hero />
-          <StatCard label="Active Sessions" value={String(device.sessions)} />
-          <StatCard label="Unique Destinations" value={String(device.uniqueDests)} />
+          <StatCard label="Total Packets" value={selectedDevice?.totalPackets.toLocaleString() ?? "0"} />
+          <StatCard label="Total Bytes Out" value={formatBytes(selectedDevice?.totalBytesOut ?? 0)} color="lime" hero />
+          <StatCard label="Total Bytes In" value={formatBytes(selectedDevice?.totalBytesIn ?? 0)} />
+          <StatCard label="Current Rate" value={`${formatBytes(selectedDevice?.bytesPerSecond ?? 0)}/s`} />
         </div>
 
         {/* Traffic timeline */}
         <div className="ps-card mb-6">
           <h3 className="display text-xl mb-4">TRAFFIC TIMELINE — LAST HOUR</h3>
           <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={trafficData}>
+            <AreaChart data={selectedDevice?.timeline ?? []}>
               <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
-              <XAxis dataKey="min" stroke="#4a5568" fontSize={10} fontFamily="JetBrains Mono" />
+              <XAxis dataKey="time" stroke="#4a5568" fontSize={10} fontFamily="JetBrains Mono" />
               <YAxis stroke="#4a5568" fontSize={10} fontFamily="JetBrains Mono" />
               <Tooltip contentStyle={{ background: "#080808", border: "1px solid #222", fontFamily: "JetBrains Mono", fontSize: 11 }} />
-              <Area type="monotone" dataKey="baseline" stroke="#444" strokeDasharray="4 4" fill="none" />
-              <Area type="monotone" dataKey="packets" stroke="#a3ff12" fill="rgba(163,255,18,0.1)" strokeWidth={1.5} />
+              <Area isAnimationActive={false} type="monotone" dataKey="baseline" stroke="#444" strokeDasharray="4 4" fill="none" />
+              <Area isAnimationActive={false} type="monotone" dataKey="bytesOut" stroke="#a3ff12" fill="rgba(163,255,18,0.1)" strokeWidth={1.5} />
+              <Area isAnimationActive={false} type="monotone" dataKey="bytesIn" stroke="#3b82f6" fill="rgba(59,130,246,0.1)" strokeWidth={1.5} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -117,15 +111,15 @@ function DeviceDetail() {
             <h3 className="display text-xl mb-4">PROTOCOL DISTRIBUTION</h3>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
-                <Pie data={protoData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2}>
-                  {protoData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                <Pie data={selectedDevice?.protocols ?? []} dataKey="percent" nameKey="protocol" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2}>
+                  {(selectedDevice?.protocols ?? []).map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
                 <Tooltip contentStyle={{ background: "#080808", border: "1px solid #222", fontFamily: "JetBrains Mono", fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-wrap gap-2 justify-center">
-              {protoData.map((p, i) => (
-                <span key={p.name} className="mono text-[10px]" style={{ color: COLORS[i % COLORS.length] }}>● {p.name} {p.value}%</span>
+              {(selectedDevice?.protocols ?? []).map((p, i) => (
+                <span key={p.protocol} className="mono text-[10px]" style={{ color: COLORS[i % COLORS.length] }}>● {p.protocol} {p.percent}%</span>
               ))}
             </div>
           </div>

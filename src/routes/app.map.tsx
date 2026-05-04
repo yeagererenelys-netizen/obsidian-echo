@@ -3,7 +3,9 @@ import { PageHeader } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
 import { VIDEOS } from "@/config/videoConfig";
 import { MOCK_MAP_CONNECTIONS } from "@/lib/mockData";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useMapArcs } from "@/hooks/useMapArcs";
+import { GEOIP } from "@/data/geoipData";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -20,7 +22,7 @@ L.Icon.Default.mergeOptions({
 });
 
 function WorldMap() {
-  const [activeConns, setActiveConns] = useState(MOCK_MAP_CONNECTIONS);
+  const { arcs } = useMapArcs();
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -28,19 +30,35 @@ function WorldMap() {
     return () => clearInterval(interval);
   }, []);
 
+  const uniqueEndpoints = useMemo(() => {
+    const seen = new Set<string>();
+    const points: Array<{lat: number; lng: number; ip: string; city: string; isThreat: boolean}> = [];
+    arcs.forEach(arc => {
+      if (!seen.has(arc.srcIp)) {
+        seen.add(arc.srcIp);
+        points.push({ lat: arc.srcLat, lng: arc.srcLng, ip: arc.srcIp, city: arc.srcCity, isThreat: false });
+      }
+      if (!seen.has(arc.dstIp)) {
+        seen.add(arc.dstIp);
+        points.push({ lat: arc.dstLat, lng: arc.dstLng, ip: arc.dstIp, city: arc.dstCity, isThreat: GEOIP[arc.dstIp]?.isThreat ?? false });
+      }
+    });
+    return points;
+  }, [arcs]);
+
   const countries = [
-    { c: "🇺🇸 United States", n: activeConns.filter(c => c.country === "US").length * 24, sev: "safe" },
-    { c: "🇩🇪 Germany", n: activeConns.filter(c => c.country === "DE").length * 12, sev: activeConns.some(c => c.country === "DE" && c.threat) ? "warn" : "safe" },
-    { c: "🇷🇺 Russia", n: activeConns.filter(c => c.country === "RU").length * 3, sev: "threat" },
-    { c: "🇦🇺 Australia", n: activeConns.filter(c => c.country === "AU").length * 5, sev: "safe" },
-    { c: "🧅 Tor exits", n: activeConns.filter(c => c.type === "tor").length, sev: "threat" },
+    { c: "🇺🇸 United States", n: arcs.filter(a => GEOIP[a.dstIp]?.country === "US").length, sev: "safe" },
+    { c: "🇩🇪 Germany", n: arcs.filter(a => GEOIP[a.dstIp]?.country === "DE").length, sev: arcs.some(a => GEOIP[a.dstIp]?.country === "DE" && a.isThreat) ? "warn" : "safe" },
+    { c: "🇷🇺 Russia", n: arcs.filter(a => GEOIP[a.dstIp]?.country === "RU").length, sev: "threat" },
+    { c: "🇦🇺 Australia", n: arcs.filter(a => GEOIP[a.dstIp]?.country === "AU").length, sev: "safe" },
+    { c: "🧅 Tor exits", n: arcs.filter(a => a.isThreat && a.dstCity === "Paris").length, sev: "threat" },
   ];
 
   return (
     <div className="relative h-full flex flex-col">
       <PageHeader
         title="GEOGRAPHIC MAP"
-        subtitle={<><span className="dot dot-lime" /> {activeConns.length} active connections · Updated live</>}
+        subtitle={<><span className="dot dot-lime" /> {arcs.filter(a => a.isActive).length} active connections · Updated live</>}
       />
 
       <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
@@ -59,66 +77,53 @@ function WorldMap() {
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
             />
             
-            {activeConns.map((conn, i) => {
-              const color = conn.threat ? "#ef4444" : conn.type === "tor" ? "#ef4444" : conn.type === "vpn" ? "#eab308" : "#a3ff12";
-              const weight = Math.max(1, Math.log(conn.bytes / 1000) * 0.5);
+            {arcs.map((arc, i) => {
+              const color = arc.isThreat ? "#ef4444" : arc.isActive ? "#a3ff12" : "#444444";
+              const weight = Math.max(1, Math.min(4, Math.log2(arc.packetCount + 1)));
+              const opacity = arc.isActive ? 0.8 : 0.3;
               
               return (
-                <div key={i}>
-                  {/* Arc from India (local) to Destination */}
+                <div key={arc.id}>
                   <Polyline 
-                    positions={[[28.6139, 77.2090], [conn.dstLat, conn.dstLng]]}
+                    positions={[[arc.srcLat, arc.srcLng], [arc.dstLat, arc.dstLng]]}
                     pathOptions={{
                       color: color,
                       weight: weight,
-                      opacity: 0.3,
+                      opacity: opacity,
                       dashArray: "5, 10",
                       dashOffset: String(-(tick * 2) % 30),
                     }}
                   />
-                  
-                  {/* Destination Marker */}
-                  <CircleMarker
-                    center={[conn.dstLat, conn.dstLng]}
-                    radius={Math.max(4, Math.log(conn.bytes / 1000) * 1.5)}
-                    pathOptions={{
-                      fillColor: color,
-                      fillOpacity: 0.8,
-                      color: color,
-                      weight: conn.threat ? 2 : 0,
-                      opacity: 0.5 + Math.sin(tick * 0.2 + i) * 0.3
-                    }}
-                  >
-                    <Popup className="ps-popup">
-                      <div className="ps-card !p-2 !text-xs min-w-[140px] bg-obsidian">
-                        <div className="mono text-white font-bold">{conn.dst}</div>
-                        <div className="text-ghost mb-1">{conn.city}, {conn.country}</div>
-                        <div className="flex justify-between border-t border-graphite mt-1 pt-1">
-                          <span className="text-silver">Protocol:</span>
-                          <span className="mono text-lime">HTTPS</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-silver">Volume:</span>
-                          <span className="mono text-lime">{(conn.bytes / 1024).toFixed(1)} KB</span>
-                        </div>
-                        {conn.type !== 'safe' && (
-                          <div className="mt-2 px-1 py-0.5 rounded bg-threat-dim/20 border border-threat/40 text-[10px] text-threat text-center uppercase mono">
-                            {conn.type} Detected
-                          </div>
-                        )}
-                      </div>
-                    </Popup>
-                  </CircleMarker>
                 </div>
               );
             })}
 
-            {/* Local Marker (India) */}
-            <CircleMarker 
-              center={[28.6139, 77.2090]} 
-              radius={8}
-              pathOptions={{ fillColor: "#a3ff12", fillOpacity: 0.9, color: "#a3ff12", weight: 0 }}
-            />
+            {uniqueEndpoints.map((pt, i) => (
+              <CircleMarker
+                key={pt.ip}
+                center={[pt.lat, pt.lng]}
+                radius={pt.isThreat ? 8 : 5}
+                pathOptions={{
+                  fillColor: pt.isThreat ? "#ef4444" : "#a3ff12",
+                  fillOpacity: pt.isThreat ? 0.8 : 0.9,
+                  color: pt.isThreat ? "#ef4444" : "#a3ff12",
+                  weight: pt.isThreat ? 2 : 0,
+                  opacity: pt.isThreat ? (0.5 + Math.sin(tick * 0.2 + i) * 0.3) : 1
+                }}
+              >
+                <Popup className="ps-popup">
+                  <div className="ps-card !p-2 !text-xs min-w-[140px] bg-obsidian">
+                    <div className="mono text-white font-bold">{pt.ip}</div>
+                    <div className="text-ghost mb-1">{pt.city}</div>
+                    {pt.isThreat && (
+                      <div className="mt-2 px-1 py-0.5 rounded bg-threat-dim/20 border border-threat/40 text-[10px] text-threat text-center uppercase mono">
+                        Threat Detected
+                      </div>
+                    )}
+                  </div>
+                </Popup>
+              </CircleMarker>
+            ))}
           </MapContainer>
 
           {/* Map Overlay Controls */}
@@ -134,7 +139,7 @@ function WorldMap() {
             <VideoBackground src={VIDEOS.BG_04} opacity={0.4} />
             <div className="relative z-10">
               <div className="micro mb-1">Active Connections</div>
-              <div className="display text-[48px] text-lime leading-none animate-pulse-slow">{activeConns.length}</div>
+              <div className="display text-[48px] text-lime leading-none animate-pulse-slow">{arcs.filter(a => a.isActive).length}</div>
             </div>
           </div>
 
@@ -159,16 +164,13 @@ function WorldMap() {
 
             <h3 className="display text-lg mb-3 mt-8 text-threat">THREAT ANALYSIS</h3>
             <div className="space-y-3">
-              {activeConns.filter(c => c.threat).map((c, i) => (
+              {arcs.filter(a => a.isThreat && a.isActive).map((c, i) => (
                 <div key={i} className="mono text-[10px] p-2 rounded bg-threat-dim/20 border-l-2 border-threat animate-fade-in">
                   <div className="text-white flex justify-between">
-                    <span>{c.dst}</span>
+                    <span>{c.dstIp}</span>
                     <span className="text-threat">CRITICAL</span>
                   </div>
-                  <div className="text-ghost mt-1 uppercase">
-                    {c.type === "tor" ? "🧅 Tor Exit Node" : c.type === "beacon" ? "📡 C2 Beaconing" : "⚠ Malicious Rep."}
-                  </div>
-                  <div className="text-[9px] text-silver mt-1">{c.city}, {c.country}</div>
+                  <div className="text-[9px] text-silver mt-1">{c.dstCity}</div>
                 </div>
               ))}
             </div>
