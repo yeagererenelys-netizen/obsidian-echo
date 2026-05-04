@@ -1,197 +1,710 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader } from "@/components/ps/Shell";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import * as d3 from "d3";
 import { MOCK_GRAPH_NODES, MOCK_GRAPH_EDGES } from "@/lib/mockData";
-import { useState, useEffect, useRef, useMemo } from "react";
 
-export const Route = createFileRoute("/app/graph")({ component: Graph });
+export const Route = createFileRoute("/app/graph")({ component: CommunicationGraph });
 
-const nodeColor = (type: string) => {
-  switch (type) {
-    case "router": return "#ffffff";
-    case "internal": return "#a3ff12";
-    case "external": return "#3b82f6";
-    case "threat": return "#ef4444";
-    default: return "#a0aec0";
-  }
+type Node = {
+  id: string;
+  label: string;
+  type: string;
+  threatLevel: number;
+  packetCount: number;
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
 };
 
-const edgeColor = (t: number) => t === 0 ? "#a3ff12" : t === 1 ? "#eab308" : "#ef4444";
+type Link = {
+  source: string | Node;
+  target: string | Node;
+  volume: number;
+  protocol: string;
+  threatLevel: number;
+  active: boolean;
+};
 
-function Graph() {
+type GraphLink = Link & {
+  uid: string;
+  dashOffset: number;
+  pulsePhase: number;
+};
+
+const PROTOCOL_FILTERS = ["ALL", "TCP", "UDP", "DNS", "HTTP"] as const;
+type ProtocolFilter = (typeof PROTOCOL_FILTERS)[number];
+
+const THREAT_FILTERS = ["ALL", "CLEAN", "SUSPICIOUS", "THREAT"] as const;
+type ThreatFilter = (typeof THREAT_FILTERS)[number];
+
+const EDGE_COLORS: Record<number, string> = {
+  0: "#a3ff12",
+  1: "#eab308",
+  2: "#ef4444",
+};
+
+const NODE_COLORS: Record<string, string> = {
+  router: "#ffffff",
+  internal: "#a3ff12",
+  external: "#3b82f6",
+  threat: "#ef4444",
+};
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const edgeWidth = (volume: number) => clamp(Math.log(volume + 1) * 2, 1, 8);
+const nodeRadius = (packetCount: number) => clamp(Math.sqrt(packetCount) * 0.8, 8, 40);
+
+const getNodeId = (value: string | Node) => (typeof value === "string" ? value : value.id);
+const getLinkUid = (link: Link) => `${getNodeId(link.source)}->${getNodeId(link.target)}:${link.protocol}`;
+
+const matchesProtocol = (protocol: string, filter: ProtocolFilter) => {
+  if (filter === "ALL") return true;
+  if (filter === "HTTP") return protocol === "HTTP" || protocol === "HTTPS";
+  return protocol === filter;
+};
+
+const matchesThreat = (level: number, filter: ThreatFilter) => {
+  if (filter === "ALL") return true;
+  if (filter === "CLEAN") return level === 0;
+  if (filter === "SUSPICIOUS") return level === 1;
+  return level >= 2;
+};
+
+const threatLabel = (level: number) => {
+  if (level >= 2) return "THREAT";
+  if (level === 1) return "SUSPICIOUS";
+  return "CLEAN";
+};
+
+const pick = <T,>(items: T[]) => items[Math.floor(Math.random() * items.length)];
+
+const buildMockGraph = () => {
+  const nodes = MOCK_GRAPH_NODES.slice(0, 20);
+  const nodeIds = nodes.map(n => n.id);
+  const nodeSet = new Set(nodeIds);
+  const edges = MOCK_GRAPH_EDGES.filter(edge => nodeSet.has(getNodeId(edge.source)) && nodeSet.has(getNodeId(edge.target)));
+  const edgeKeys = new Set(edges.map(getLinkUid));
+  const protocols = ["TCP", "UDP", "DNS", "HTTP", "HTTPS", "TLS"];
+
+  while (edges.length < 35) {
+    const source = pick(nodeIds);
+    const target = pick(nodeIds);
+    if (source === target) continue;
+    const protocol = pick(protocols);
+    const threatLevel = Math.random() > 0.88 ? 2 : Math.random() > 0.7 ? 1 : 0;
+    const candidate: Link = {
+      source,
+      target,
+      volume: 800 + Math.floor(Math.random() * 50000),
+      protocol,
+      threatLevel,
+      active: Math.random() > 0.45,
+    };
+    const key = getLinkUid(candidate);
+    if (edgeKeys.has(key)) continue;
+    edgeKeys.add(key);
+    edges.push(candidate);
+  }
+
+  return { nodes, edges };
+};
+
+const evolveMockLinks = (prev: Link[], nodeIds: string[]) => {
+  const protocols = ["TCP", "UDP", "DNS", "HTTP", "HTTPS", "TLS"];
+  const updated = prev.map(link => ({
+    ...link,
+    volume: Math.max(300, Math.round(link.volume * (0.65 + Math.random() * 0.9))),
+    active: Math.random() > 0.35,
+  }));
+
+  const edgeKeys = new Set(updated.map(getLinkUid));
+  const addCount = 2 + Math.floor(Math.random() * 2);
+  for (let i = 0; i < addCount; i += 1) {
+    const source = pick(nodeIds);
+    const target = pick(nodeIds);
+    if (source === target) continue;
+    const protocol = pick(protocols);
+    const threatLevel = Math.random() > 0.88 ? 2 : Math.random() > 0.7 ? 1 : 0;
+    const candidate: Link = {
+      source,
+      target,
+      volume: 900 + Math.floor(Math.random() * 60000),
+      protocol,
+      threatLevel,
+      active: Math.random() > 0.35,
+    };
+    const key = getLinkUid(candidate);
+    if (edgeKeys.has(key)) continue;
+    edgeKeys.add(key);
+    updated.push(candidate);
+  }
+
+  return updated.slice(-35);
+};
+
+function CommunicationGraph() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
-  const [protoFilter, setProtoFilter] = useState("ALL");
-  const [threatFilter, setThreatFilter] = useState("ALL");
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
+  const simulationRef = useRef<d3.Simulation<Node, GraphLink> | null>(null);
+  const linkSelectionRef = useRef<d3.Selection<SVGLineElement, GraphLink, SVGGElement, unknown> | null>(null);
+  const trailSelectionRef = useRef<d3.Selection<SVGLineElement, GraphLink, SVGGElement, unknown> | null>(null);
+  const pulseSelectionRef = useRef<d3.Selection<SVGCircleElement, GraphLink, SVGGElement, unknown> | null>(null);
+  const nodeSelectionRef = useRef<d3.Selection<SVGCircleElement, Node, SVGGElement, unknown> | null>(null);
+  const labelSelectionRef = useRef<d3.Selection<SVGTextElement, Node, SVGGElement, unknown> | null>(null);
+  const linkMetaRef = useRef(new Map<string, { dashOffset: number; pulsePhase: number }>());
+  const linksRef = useRef<Link[]>(MOCK_GRAPH_EDGES);
+  const nodesRef = useRef<Node[]>(MOCK_GRAPH_NODES);
+  const timerRef = useRef<d3.Timer | null>(null);
+  const mockIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Simple force layout positions (computed once, deterministic)
-  const nodePositions = useMemo(() => {
-    const positions: Record<string, { x: number; y: number }> = {};
-    const internalNodes = MOCK_GRAPH_NODES.filter(n => n.type === "router" || n.type === "internal");
-    const externalNodes = MOCK_GRAPH_NODES.filter(n => n.type !== "router" && n.type !== "internal");
+  const [nodes, setNodes] = useState<Node[]>(MOCK_GRAPH_NODES);
+  const [links, setLinks] = useState<Link[]>(MOCK_GRAPH_EDGES);
+  const [backendOffline, setBackendOffline] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [protocolFilter, setProtocolFilter] = useState<ProtocolFilter>("ALL");
+  const [threatFilter, setThreatFilter] = useState<ThreatFilter>("ALL");
+  const [hovered, setHovered] = useState<{
+    node: Node;
+    x: number;
+    y: number;
+    protocols: string;
+  } | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 900, height: 600 });
+  const [topConnections, setTopConnections] = useState<Link[]>([]);
 
-    // Router in center
-    const router = MOCK_GRAPH_NODES.find(n => n.type === "router");
-    if (router) positions[router.id] = { x: 400, y: 300 };
+  const normalizedLinks = useMemo(() => {
+    const nodeSet = new Set(nodes.map(n => n.id));
+    return links.filter(link => nodeSet.has(getNodeId(link.source)) && nodeSet.has(getNodeId(link.target)));
+  }, [links, nodes]);
 
-    // Internal nodes in inner ring
-    internalNodes.filter(n => n.type !== "router").forEach((n, i) => {
-      const angle = ((i + 1) / (internalNodes.length)) * Math.PI * 2 - Math.PI / 2;
-      positions[n.id] = { x: 400 + Math.cos(angle) * 120, y: 300 + Math.sin(angle) * 100 };
+  useEffect(() => {
+    linksRef.current = normalizedLinks;
+  }, [normalizedLinks]);
+
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
+  const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId) ?? null, [nodes, selectedNodeId]);
+
+  const protocolSummaryByNode = useMemo(() => {
+    const summary = new Map<string, Record<string, number>>();
+    normalizedLinks.forEach(link => {
+      const src = getNodeId(link.source);
+      const dst = getNodeId(link.target);
+      const add = (id: string) => {
+        if (!summary.has(id)) summary.set(id, {});
+        const bucket = summary.get(id);
+        if (!bucket) return;
+        bucket[link.protocol] = (bucket[link.protocol] || 0) + link.volume;
+      };
+      add(src);
+      add(dst);
     });
 
-    // External nodes in outer ring
-    externalNodes.forEach((n, i) => {
-      const angle = (i / externalNodes.length) * Math.PI * 2 - Math.PI / 4;
-      const radius = 220 + (i % 3) * 40;
-      positions[n.id] = { x: 400 + Math.cos(angle) * radius, y: 300 + Math.sin(angle) * radius };
+    const result = new Map<string, string>();
+    summary.forEach((bucket, id) => {
+      const entries = Object.entries(bucket).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      const total = entries.reduce((acc, [, value]) => acc + value, 0) || 1;
+      const text = entries.map(([protocol, value]) => `${protocol} ${Math.round((value / total) * 100)}%`).join(", ");
+      result.set(id, text);
     });
-    return positions;
+    return result;
+  }, [normalizedLinks]);
+
+  const filteredLinks = useMemo(
+    () => normalizedLinks.filter(link => matchesProtocol(link.protocol, protocolFilter) && matchesThreat(link.threatLevel, threatFilter)),
+    [normalizedLinks, protocolFilter, threatFilter]
+  );
+
+  const activeNodeIds = useMemo(() => {
+    const ids = new Set<string>();
+    filteredLinks.forEach(link => {
+      ids.add(getNodeId(link.source));
+      ids.add(getNodeId(link.target));
+    });
+    return ids;
+  }, [filteredLinks]);
+
+  const startMockStream = useCallback(() => {
+    setBackendOffline(true);
+    const { nodes: mockNodes, edges: mockEdges } = buildMockGraph();
+    setNodes(mockNodes);
+    setLinks(mockEdges);
+
+    if (mockIntervalRef.current) return;
+    mockIntervalRef.current = setInterval(() => {
+      setLinks(prev => evolveMockLinks(prev, mockNodes.map(n => n.id)));
+    }, 3000);
   }, []);
 
-  // Animate edge pulses
+  const stopMockStream = useCallback(() => {
+    if (mockIntervalRef.current) {
+      clearInterval(mockIntervalRef.current);
+      mockIntervalRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
-    const interval = setInterval(() => setTick(t => t + 1), 50);
+    let alive = true;
+    let ws: WebSocket | null = null;
+
+    try {
+      ws = new WebSocket("ws://localhost:8000/ws/graph");
+      ws.onopen = () => {
+        if (!alive) return;
+        setBackendOffline(false);
+        stopMockStream();
+      };
+      ws.onmessage = event => {
+        if (!alive) return;
+        try {
+          const data = JSON.parse(event.data);
+          if (data.nodes) setNodes(data.nodes);
+          if (data.edges) setLinks(data.edges);
+          setBackendOffline(false);
+        } catch (error) {
+          console.error("Failed to parse graph data:", error);
+        }
+      };
+      ws.onerror = () => {
+        if (!alive) return;
+        startMockStream();
+      };
+      ws.onclose = () => {
+        if (!alive) return;
+        startMockStream();
+      };
+    } catch (error) {
+      if (alive) startMockStream();
+    }
+
+    return () => {
+      alive = false;
+      if (ws) ws.close();
+      stopMockStream();
+    };
+  }, [startMockStream, stopMockStream]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const el = containerRef.current;
+    const observer = new ResizeObserver(entries => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      if (width && height) setDimensions({ width, height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!svgRef.current) return;
+    const svg = d3.select(svgRef.current);
+    svg.selectAll("*").remove();
+
+    const linkGroup = svg.append("g");
+    const trailGroup = svg.append("g");
+    const pulseGroup = svg.append("g");
+    const nodeGroup = svg.append("g");
+    const labelGroup = svg.append("g");
+
+    const simulation = d3
+      .forceSimulation<Node, GraphLink>([])
+      .alphaDecay(0.02)
+      .force(
+        "link",
+        d3.forceLink<Node, GraphLink>([]).id(d => d.id).distance(120).strength(0.1)
+      )
+      .force("charge", d3.forceManyBody().strength(-300))
+      .force("center", d3.forceCenter(450, 300))
+      .force("collision", d3.forceCollide(40));
+
+    simulationRef.current = simulation;
+
+    simulation.on("tick", () => {
+      linkSelectionRef.current
+        ?.attr("x1", d => (d.source as Node).x ?? 0)
+        .attr("y1", d => (d.source as Node).y ?? 0)
+        .attr("x2", d => (d.target as Node).x ?? 0)
+        .attr("y2", d => (d.target as Node).y ?? 0);
+
+      trailSelectionRef.current
+        ?.attr("x1", d => (d.source as Node).x ?? 0)
+        .attr("y1", d => (d.source as Node).y ?? 0)
+        .attr("x2", d => (d.target as Node).x ?? 0)
+        .attr("y2", d => (d.target as Node).y ?? 0);
+
+      nodeSelectionRef.current
+        ?.attr("cx", d => d.x ?? 0)
+        .attr("cy", d => d.y ?? 0);
+
+      labelSelectionRef.current
+        ?.attr("x", d => d.x ?? 0)
+        .attr("y", d => (d.y ?? 0) - 18);
+    });
+
+    timerRef.current = d3.timer(elapsed => {
+      const trail = trailSelectionRef.current;
+      if (trail) {
+        trail.attr("stroke-dashoffset", d => -((elapsed / 40 + d.dashOffset) % 12));
+      }
+
+      const pulses = pulseSelectionRef.current;
+      if (pulses) {
+        pulses
+          .attr("cx", d => {
+            const source = d.source as Node;
+            const target = d.target as Node;
+            const speed = d.active ? 0.0006 : 0.00035;
+            const t = (elapsed * speed + d.pulsePhase) % 1;
+            return (source.x ?? 0) + ((target.x ?? 0) - (source.x ?? 0)) * t;
+          })
+          .attr("cy", d => {
+            const source = d.source as Node;
+            const target = d.target as Node;
+            const speed = d.active ? 0.0006 : 0.00035;
+            const t = (elapsed * speed + d.pulsePhase) % 1;
+            return (source.y ?? 0) + ((target.y ?? 0) - (source.y ?? 0)) * t;
+          })
+          .attr("r", d => {
+            if (!d.active) return 2.2;
+            const phase = elapsed * 0.01 + d.pulsePhase * Math.PI * 2;
+            return 3.5 + 1.5 * Math.sin(phase);
+          })
+          .attr("opacity", d => {
+            if (!d.active) return 0.55;
+            const phase = elapsed * 0.01 + d.pulsePhase * Math.PI * 2;
+            return 0.6 + 0.35 * Math.sin(phase);
+          });
+      }
+    });
+
+    linkSelectionRef.current = linkGroup.selectAll("line");
+    trailSelectionRef.current = trailGroup.selectAll("line");
+    pulseSelectionRef.current = pulseGroup.selectAll("circle");
+    nodeSelectionRef.current = nodeGroup.selectAll("circle");
+    labelSelectionRef.current = labelGroup.selectAll("text");
+
+    return () => {
+      simulation.stop();
+      timerRef.current?.stop();
+      timerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!svgRef.current || !simulationRef.current) return;
+
+    const svg = d3.select(svgRef.current);
+    svg.attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`);
+    simulationRef.current.force("center", d3.forceCenter(dimensions.width / 2, dimensions.height / 2));
+
+    const linkData: GraphLink[] = filteredLinks.map(link => {
+      const uid = getLinkUid(link);
+      let meta = linkMetaRef.current.get(uid);
+      if (!meta) {
+        meta = { dashOffset: Math.random() * 40, pulsePhase: Math.random() };
+        linkMetaRef.current.set(uid, meta);
+      }
+      return {
+        ...link,
+        source: getNodeId(link.source),
+        target: getNodeId(link.target),
+        uid,
+        dashOffset: meta.dashOffset,
+        pulsePhase: meta.pulsePhase,
+      };
+    });
+
+    const linkForce = simulationRef.current.force("link") as d3.ForceLink<Node, GraphLink>;
+    simulationRef.current.nodes(nodes);
+    linkForce.links(linkData);
+    simulationRef.current.alpha(0.3).restart();
+
+    const linkSelection = svg
+      .select<SVGGElement>("g")
+      .selectAll<SVGLineElement, GraphLink>("line")
+      .data(linkData, d => d.uid);
+
+    const linkEnter = linkSelection
+      .enter()
+      .append("line")
+      .attr("stroke", d => EDGE_COLORS[Math.min(2, Math.max(0, d.threatLevel))])
+      .attr("stroke-width", d => edgeWidth(d.volume))
+      .attr("opacity", d => (d.active ? 0.85 : 0.4));
+
+    linkSelection
+      .merge(linkEnter)
+      .attr("stroke", d => EDGE_COLORS[Math.min(2, Math.max(0, d.threatLevel))])
+      .attr("stroke-width", d => edgeWidth(d.volume))
+      .attr("opacity", d => (d.active ? 0.85 : 0.4));
+
+    linkSelection.exit().remove();
+
+    linkSelectionRef.current = linkSelection.merge(linkEnter);
+
+    const trailSelection = svg
+      .select<SVGGElement>("g:nth-of-type(2)")
+      .selectAll<SVGLineElement, GraphLink>("line")
+      .data(linkData, d => d.uid);
+
+    const trailEnter = trailSelection
+      .enter()
+      .append("line")
+      .attr("stroke", d => EDGE_COLORS[Math.min(2, Math.max(0, d.threatLevel))])
+      .attr("stroke-width", 1.4)
+      .attr("stroke-dasharray", "2 10")
+      .attr("stroke-linecap", "round")
+      .attr("opacity", d => (d.active ? 0.65 : 0.35));
+
+    trailSelection
+      .merge(trailEnter)
+      .attr("stroke", d => EDGE_COLORS[Math.min(2, Math.max(0, d.threatLevel))])
+      .attr("stroke-width", 1.4)
+      .attr("stroke-dasharray", "2 10")
+      .attr("opacity", d => (d.active ? 0.65 : 0.35));
+
+    trailSelection.exit().remove();
+    trailSelectionRef.current = trailSelection.merge(trailEnter);
+
+    const pulseSelection = svg
+      .select<SVGGElement>("g:nth-of-type(3)")
+      .selectAll<SVGCircleElement, GraphLink>("circle")
+      .data(linkData, d => d.uid);
+
+    const pulseEnter = pulseSelection
+      .enter()
+      .append("circle")
+      .attr("fill", d => EDGE_COLORS[Math.min(2, Math.max(0, d.threatLevel))])
+      .attr("opacity", d => (d.active ? 0.9 : 0.55));
+
+    pulseSelection
+      .merge(pulseEnter)
+      .attr("fill", d => EDGE_COLORS[Math.min(2, Math.max(0, d.threatLevel))]);
+
+    pulseSelection.exit().remove();
+    pulseSelectionRef.current = pulseSelection.merge(pulseEnter);
+
+    const nodeSelection = svg
+      .select<SVGGElement>("g:nth-of-type(4)")
+      .selectAll<SVGCircleElement, Node>("circle")
+      .data(nodes, d => d.id);
+
+    const nodeEnter = nodeSelection
+      .enter()
+      .append("circle")
+      .attr("stroke", "rgba(163, 255, 18, 0.5)")
+      .attr("stroke-width", 2)
+      .attr("cursor", "pointer")
+      .on("mouseenter", (event, d) => {
+        const [x, y] = d3.pointer(event, svgRef.current);
+        const protocols = protocolSummaryByNode.get(d.id) || "";
+        setHovered({ node: d, x, y, protocols });
+        d3.select(event.currentTarget).attr("r", nodeRadius(d.packetCount) * 1.3);
+      })
+      .on("mousemove", (event, d) => {
+        const [x, y] = d3.pointer(event, svgRef.current);
+        const protocols = protocolSummaryByNode.get(d.id) || "";
+        setHovered({ node: d, x, y, protocols });
+      })
+      .on("mouseleave", (event, d) => {
+        setHovered(null);
+        d3.select(event.currentTarget).attr("r", nodeRadius(d.packetCount));
+      })
+      .on("click", (_, d) => setSelectedNodeId(d.id));
+
+    nodeSelection
+      .merge(nodeEnter)
+      .attr("r", d => nodeRadius(d.packetCount))
+      .attr("fill", d => NODE_COLORS[d.type] || "#a3ff12")
+      .attr("opacity", d => (activeNodeIds.size > 0 && !activeNodeIds.has(d.id) ? 0.2 : 1));
+
+    nodeSelection.exit().remove();
+    nodeSelectionRef.current = nodeSelection.merge(nodeEnter);
+
+    const labelSelection = svg
+      .select<SVGGElement>("g:nth-of-type(5)")
+      .selectAll<SVGTextElement, Node>("text")
+      .data(nodes, d => d.id);
+
+    const labelEnter = labelSelection
+      .enter()
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("class", "mono text-[9px] text-white pointer-events-none");
+
+    labelSelection
+      .merge(labelEnter)
+      .text(d => d.label)
+      .attr("opacity", d => (activeNodeIds.size > 0 && !activeNodeIds.has(d.id) ? 0.2 : 1));
+
+    labelSelection.exit().remove();
+    labelSelectionRef.current = labelSelection.merge(labelEnter);
+  }, [nodes, filteredLinks, protocolSummaryByNode, activeNodeIds, dimensions]);
+
+  useEffect(() => {
+    const update = () => {
+      const sorted = [...linksRef.current].sort((a, b) => b.volume - a.volume).slice(0, 5);
+      setTopConnections(sorted);
+    };
+    update();
+    const interval = setInterval(update, 2000);
     return () => clearInterval(interval);
   }, []);
 
-  // Filter edges
-  const filteredEdges = MOCK_GRAPH_EDGES.filter(e => {
-    if (protoFilter !== "ALL" && e.protocol !== protoFilter) return false;
-    if (threatFilter === "CLEAN" && e.threatLevel > 0) return false;
-    if (threatFilter === "SUSPICIOUS" && e.threatLevel !== 1) return false;
-    if (threatFilter === "THREAT" && e.threatLevel !== 2) return false;
-    return true;
-  });
+  const tooltipStyle = useMemo(() => {
+    if (!hovered) return { left: 0, top: 0 };
+    const maxLeft = Math.max(0, dimensions.width - 240);
+    const maxTop = Math.max(0, dimensions.height - 140);
+    return {
+      left: Math.min(maxLeft, hovered.x + 16),
+      top: Math.min(maxTop, hovered.y + 16),
+    };
+  }, [hovered, dimensions]);
 
-  // Top connections sorted by volume
-  const topConnections = [...MOCK_GRAPH_EDGES].sort((a, b) => b.volume - a.volume).slice(0, 5);
+  const handleResetLayout = () => {
+    simulationRef.current?.alpha(1).restart();
+  };
 
   return (
-    <div className="relative">
+    <div className="relative w-full h-full">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1A3hkNGgUSkRG1o92B7FGUJTwvASSIOES" opacity={0.06} />
+        <VideoBackground src="/videos/features/FEAT_03_anim.mp4" opacity={0.06} />
       </div>
-      <div className="relative z-10">
-        <PageHeader title="COMMUNICATION GRAPH" subtitle={`Force-directed live · ${MOCK_GRAPH_NODES.length} nodes · ${filteredEdges.length} edges`} />
 
-        {/* Filters */}
-        <div className="flex gap-2 mb-4 flex-wrap">
-          <div className="flex gap-1">
-            {["ALL", "TCP", "UDP", "DNS", "HTTPS"].map(p => (
-              <button key={p} onClick={() => setProtoFilter(p)} className={`btn !text-xs !py-1 !px-3 ${protoFilter === p ? "btn-primary" : "btn-secondary"}`}>{p}</button>
-            ))}
-          </div>
-          <div className="flex gap-1 ml-4">
-            {["ALL", "CLEAN", "SUSPICIOUS", "THREAT"].map(t => (
-              <button key={t} onClick={() => setThreatFilter(t)} className={`btn !text-xs !py-1 !px-3 ${threatFilter === t ? "btn-primary" : "btn-secondary"}`}>{t}</button>
-            ))}
+      <div className="relative z-10 w-full h-full flex flex-col">
+        <div className="px-6 py-4 border-b border-graphite/40">
+          <h1 className="display text-3xl text-white">COMMUNICATION GRAPH</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-silver">
+            <span className="flex items-center gap-2">
+              <span className="dot dot-lime" />
+              Force-directed visualization of network traffic patterns
+            </span>
+            {backendOffline && <span className="badge badge-warn text-[10px]">SIMULATED</span>}
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-9 ps-card !p-0 overflow-hidden relative" style={{ height: 620, background: "#000" }}>
-            <VideoBackground src="https://drive.google.com/uc?export=download&id=1KewMdVzeXhXCGVfzVhSiTjjZmhV4-dQq" opacity={0.05} />
-            <div className="absolute top-3 left-3 right-3 z-20 px-3 py-2 rounded border border-threat/40 bg-threat-dim flex items-center gap-2">
-              <span className="dot dot-threat" />
-              <span className="text-sm text-white">{MOCK_GRAPH_EDGES.filter(e => e.threatLevel === 2).length} critical anomalies detected</span>
-              <span className="ml-auto mono text-xs text-ghost">12:42:18</span>
+        <div className="px-6 py-3 border-b border-graphite/40 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="micro text-ghost">PROTOCOL</span>
+            <div className="flex items-center gap-1.5">
+              {PROTOCOL_FILTERS.map(filter => (
+                <button
+                  key={filter}
+                  onClick={() => setProtocolFilter(filter)}
+                  className={`badge ${protocolFilter === filter ? "badge-lime" : "badge-neutral"}`}
+                >
+                  {filter}
+                </button>
+              ))}
             </div>
-
-            <svg ref={svgRef} viewBox="0 0 800 600" className="w-full h-full relative z-10">
-              {/* Edges */}
-              {filteredEdges.map((e, i) => {
-                const src = nodePositions[e.source];
-                const tgt = nodePositions[e.target];
-                if (!src || !tgt) return null;
-                const thickness = Math.min(Math.log(e.volume + 1) * 0.8, 8);
-                const dashOffset = e.active ? -(tick * 2) % 40 : 0;
-                return (
-                  <g key={`e${i}`}>
-                    <line x1={src.x} y1={src.y} x2={tgt.x} y2={tgt.y}
-                      stroke={edgeColor(e.threatLevel)} strokeWidth={thickness} opacity={0.4} />
-                    {e.active && (
-                      <line x1={src.x} y1={src.y} x2={tgt.x} y2={tgt.y}
-                        stroke={edgeColor(e.threatLevel)} strokeWidth={thickness * 0.6}
-                        strokeDasharray="6 14" strokeDashoffset={dashOffset}
-                        opacity={0.8} />
-                    )}
-                  </g>
-                );
-              })}
-
-              {/* Nodes */}
-              {MOCK_GRAPH_NODES.map(n => {
-                const pos = nodePositions[n.id];
-                if (!pos) return null;
-                const r = Math.max(8, Math.min(40, Math.sqrt(n.packetCount) * 0.08));
-                const isHovered = hoveredNode === n.id;
-                const scale = isHovered ? 1.3 : 1;
-                return (
-                  <g key={n.id}
-                    onMouseEnter={() => setHoveredNode(n.id)}
-                    onMouseLeave={() => setHoveredNode(null)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {n.threatLevel === 2 && (
-                      <circle cx={pos.x} cy={pos.y} r={r * scale + 6} fill="none" stroke="#ef4444" strokeWidth={1} opacity={0.3 + Math.sin(tick * 0.1) * 0.2} />
-                    )}
-                    <circle cx={pos.x} cy={pos.y} r={r * scale} fill={nodeColor(n.type)}
-                      opacity={0.9}
-                      style={{ filter: n.threatLevel === 2 ? "drop-shadow(0 0 8px #ef4444)" : n.type === "router" ? "drop-shadow(0 0 8px #fff)" : undefined, transition: "r 0.15s" }}
-                    />
-                    {isHovered && (
-                      <foreignObject x={pos.x + r + 8} y={pos.y - 40} width={200} height={90}>
-                        <div className="ps-card !p-2 !text-xs" style={{ background: "rgba(8,8,8,0.95)" }}>
-                          <div className="mono text-white font-bold">{n.id}</div>
-                          <div className="text-ghost">{n.label}</div>
-                          <div className="mono text-lime">{n.packetCount.toLocaleString()} pkts</div>
-                          <div className={n.threatLevel === 2 ? "text-threat" : n.threatLevel === 1 ? "text-warn" : "text-safe"}>
-                            Threat: {["CLEAN", "SUSPICIOUS", "CRITICAL"][n.threatLevel]}
-                          </div>
-                        </div>
-                      </foreignObject>
-                    )}
-                  </g>
-                );
-              })}
-            </svg>
           </div>
 
-          {/* Sidebar */}
-          <div className="col-span-3 space-y-4">
-            <div className="ps-card">
-              <h3 className="display text-lg mb-3">TOP CONNECTIONS</h3>
-              <div className="space-y-3">
-                {topConnections.map((c, i) => (
-                  <div key={i} className="border-b border-graphite/50 pb-2">
-                    <div className="mono text-[11px] text-white">{c.source}</div>
-                    <div className="mono text-[10px] text-ghost">→ {c.target}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="flex-1 h-1 bg-carbon rounded">
-                        <div className="h-full rounded" style={{ width: `${Math.min((c.volume / topConnections[0].volume) * 100, 100)}%`, background: edgeColor(c.threatLevel) }} />
+          <div className="flex items-center gap-2">
+            <span className="micro text-ghost">THREAT</span>
+            <div className="flex items-center gap-1.5">
+              {THREAT_FILTERS.map(filter => (
+                <button
+                  key={filter}
+                  onClick={() => setThreatFilter(filter)}
+                  className={`badge ${threatFilter === filter ? "badge-lime" : "badge-neutral"}`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button onClick={handleResetLayout} className="btn btn-secondary !text-xs">
+            RESET LAYOUT
+          </button>
+        </div>
+
+        <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+          <div className="flex-1 ps-card !p-0 overflow-hidden relative" ref={containerRef}>
+            <svg ref={svgRef} className="w-full h-full" style={{ background: "rgba(8, 8, 8, 0.8)" }} />
+            {hovered && (
+              <div
+                className="absolute bg-obsidian border border-graphite rounded-md px-3 py-2 text-xs text-silver pointer-events-none"
+                style={tooltipStyle}
+              >
+                <div className="mono text-white text-[11px]">{hovered.node.id}</div>
+                <div className="mono text-[10px] text-ghost">Packets: {hovered.node.packetCount.toLocaleString()}</div>
+                <div className="mono text-[10px] text-ghost">Threat: {threatLabel(hovered.node.threatLevel)}</div>
+                {hovered.protocols && (
+                  <div className="mono text-[10px] text-ghost">Top: {hovered.protocols}</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="w-72 flex flex-col gap-4">
+            {selectedNode && (
+              <div className="ps-card">
+                <div className="mb-4">
+                  <div className="micro text-ghost mb-1">SELECTED NODE</div>
+                  <h3 className="display text-xl text-white">{selectedNode.label}</h3>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <div className="mono text-[10px] text-ghost">IP Address</div>
+                    <div className="mono text-[11px] text-white">{selectedNode.id}</div>
+                  </div>
+                  <div>
+                    <div className="mono text-[10px] text-ghost">Type</div>
+                    <div className="mono text-[11px] text-white capitalize">{selectedNode.type}</div>
+                  </div>
+                  <div>
+                    <div className="mono text-[10px] text-ghost">Threat Level</div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-carbon rounded overflow-hidden">
+                        <div
+                          className={`h-full ${selectedNode.threatLevel >= 2 ? "bg-threat" : selectedNode.threatLevel === 1 ? "bg-warn" : "bg-lime"}`}
+                          style={{ width: `${Math.min(100, Math.max(10, selectedNode.threatLevel * 50))}%` }}
+                        />
                       </div>
-                      <span className="mono text-[10px] text-ghost">{(c.volume / 1000).toFixed(0)}K</span>
+                      <span className="mono text-[11px] text-white">{threatLabel(selectedNode.threatLevel)}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mono text-[10px] text-ghost">Packet Count</div>
+                    <div className="mono text-[11px] text-white">{selectedNode.packetCount.toLocaleString()}</div>
+                  </div>
+                </div>
+
+                <button onClick={() => setSelectedNodeId(null)} className="w-full btn btn-secondary !text-xs mt-4">
+                  DESELECT
+                </button>
+              </div>
+            )}
+
+            <div className="ps-card">
+              <div className="micro text-ghost mb-3">TOP CONNECTIONS</div>
+              <div className="space-y-3">
+                {topConnections.map(link => (
+                  <div key={getLinkUid(link)} className="border-b border-graphite/40 pb-2 last:border-b-0 last:pb-0">
+                    <div className="flex items-center justify-between">
+                      <div className="mono text-[11px] text-white">
+                        {getNodeId(link.source)}
+                      </div>
+                      <span
+                        className={`badge ${link.threatLevel >= 2 ? "badge-threat" : link.threatLevel === 1 ? "badge-warn" : "badge-neutral"}`}
+                      >
+                        {link.protocol}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-ghost mt-1">
+                      <span className="mono">-&gt; {getNodeId(link.target)}</span>
+                      <span className="mono">{link.volume.toLocaleString()}</span>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className="ps-card">
-              <div className="micro mb-2">Legend</div>
-              {[
-                { color: "#ffffff", label: "Router" },
-                { color: "#a3ff12", label: "Internal" },
-                { color: "#3b82f6", label: "External" },
-                { color: "#ef4444", label: "Threat" },
-              ].map(l => (
-                <div key={l.label} className="flex items-center gap-2 text-xs text-silver mb-1">
-                  <div className="w-3 h-3 rounded-full" style={{ background: l.color }} />
-                  {l.label}
-                </div>
-              ))}
             </div>
           </div>
         </div>

@@ -17,15 +17,15 @@ export const Route = createFileRoute("/")({
 });
 
 const FEATURES = [
-  { icon: Activity, title: "Live Packet Capture", body: "Capture live from any interface or import any .pcap. Real-time BPF filtering, 1M+ packets/min throughput.", tag: "Scapy · PyShark", video: "https://drive.google.com/uc?export=download&id=1te_RRskpv8w2ilG6lgVGu4SJqGUyxff3" },
-  { icon: Layers, title: "Session Reconstruction", body: "Reassemble raw TCP streams into readable HTTP exchanges, DNS chains, SMTP conversations — automatically.", tag: "5-Tuple Flow", video: "https://drive.google.com/uc?export=download&id=1Com-YreGmyDS7JntNIxZFfGrxb8hNPcv" },
-  { icon: Share2, title: "Communication Graph", body: "Force-directed live node graph. Every device, every connection, visualized in real time.", tag: "D3.js Force Graph", video: "https://drive.google.com/uc?export=download&id=1A3hkNGgUSkRG1o92B7FGUJTwvASSIOES" },
-  { icon: Clock, title: "Beaconing Detection", body: "Detect C2 malware by measuring inter-packet timing regularity. Flag suspicious automation in seconds.", tag: "ML · scipy", badge: "KILLER FEATURE", video: "https://drive.google.com/uc?export=download&id=1FTuD1bsR3sedbq_NwKEynFfxsDinW5_Z" },
-  { icon: Lock, title: "VPN & Proxy Detection", body: "Identify obfuscation via TTL anomalies, SOCKS5 handshakes, ASN fingerprinting, DNS-IP mismatches.", tag: "MaxMind · ASN DB", video: "https://drive.google.com/uc?export=download&id=151PvK2UrU5GJ8L3M6spLu4ImhUd_HrzM" },
-  { icon: Globe, title: "GeoIP World Map", body: "Every external connection plotted on a live globe. Tor exit nodes and threat regions highlighted.", tag: "MaxMind GeoLite2", video: "https://drive.google.com/uc?export=download&id=1esRJDztTgPvmCeP3LxBjk8jx-pcny8XD" },
-  { icon: Search, title: "Deep Protocol Inspection", body: "HTTP, DNS, TLS, SMTP, FTP — parsed and readable. Not hex dumps. Human-readable forensic records.", tag: "HTTP · DNS · TLS", video: "https://drive.google.com/uc?export=download&id=1tv_nM-LEyXPZ0k7LfR6ac4sJaj7wgJKY" },
-  { icon: Cpu, title: "Behavioral Device Profiling", body: "Per-device baselines. Anomalies flagged against device's own history — dramatically fewer false positives.", tag: "Isolation Forest", video: "https://drive.google.com/uc?export=download&id=1Ul1cVb-z0OfE9zVHZeaHRF-AU_Ke1cjE" },
-  { icon: FileArchive, title: "Evidence Packaging", body: "Export any flagged session as a filtered .pcap + JSON report. Opens in Wireshark. Forensic-grade.", tag: "dpkt · JSON", video: "https://drive.google.com/uc?export=download&id=1te_RRskpv8w2ilG6lgVGu4SJqGUyxff3" },
+  { icon: Activity, title: "Live Packet Capture", body: "Capture live from any interface or import any .pcap. Real-time BPF filtering, 1M+ packets/min throughput.", tag: "Scapy · PyShark", video: "/videos/features/FEAT_01_anim.mp4" },
+  { icon: Layers, title: "Session Reconstruction", body: "Reassemble raw TCP streams into readable HTTP exchanges, DNS chains, SMTP conversations — automatically.", tag: "5-Tuple Flow", video: "/videos/features/FEAT_02_anim.mp4" },
+  { icon: Share2, title: "Communication Graph", body: "Force-directed live node graph. Every device, every connection, visualized in real time.", tag: "D3.js Force Graph", video: "/videos/features/FEAT_03_anim.mp4" },
+  { icon: Clock, title: "Beaconing Detection", body: "Detect C2 malware by measuring inter-packet timing regularity. Flag suspicious automation in seconds.", tag: "ML · scipy", badge: "KILLER FEATURE", video: "/videos/features/FEAT_04_anim.mp4" },
+  { icon: Lock, title: "VPN & Proxy Detection", body: "Identify obfuscation via TTL anomalies, SOCKS5 handshakes, ASN fingerprinting, DNS-IP mismatches.", tag: "MaxMind · ASN DB", video: "/videos/features/FEAT_05_anim.mp4" },
+  { icon: Globe, title: "GeoIP World Map", body: "Every external connection plotted on a live globe. Tor exit nodes and threat regions highlighted.", tag: "MaxMind GeoLite2", video: "/videos/features/FEAT_06_anim.mp4" },
+  { icon: Search, title: "Deep Protocol Inspection", body: "HTTP, DNS, TLS, SMTP, FTP — parsed and readable. Not hex dumps. Human-readable forensic records.", tag: "HTTP · DNS · TLS", video: "/videos/features/FEAT_07_anim.mp4" },
+  { icon: Cpu, title: "Behavioral Device Profiling", body: "Per-device baselines. Anomalies flagged against device's own history — dramatically fewer false positives.", tag: "Isolation Forest" },
+  { icon: FileArchive, title: "Evidence Packaging", body: "Export any flagged session as a filtered .pcap + JSON report. Opens in Wireshark. Forensic-grade.", tag: "dpkt · JSON", video: "/videos/features/FEAT_08_anim.mp4" },
 ];
 
 function Landing() {
@@ -33,7 +33,7 @@ function Landing() {
     <div className="bg-void text-white min-h-screen">
       {/* Hero */}
       <section className="section-video-container min-h-screen flex items-center justify-center px-6 relative">
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1QPiN4smXECbMxB1FQxTTxPx6JQavuG6_" opacity={0.4} />
+        <VideoBackground src="/videos/hero/HERO_01_anim.mp4" opacity={0.4} />
         <div className="absolute inset-0 z-[1] hex-bg opacity-40" />
         <div className="absolute inset-0 z-[1]" style={{ background: "radial-gradient(ellipse at center, rgba(163,255,18,0.08), transparent 60%)" }} />
         <div className="absolute inset-x-0 bottom-0 h-1/2 z-[2]" style={{ background: "linear-gradient(to top, #000 0%, transparent 100%)" }} />
@@ -86,7 +86,7 @@ function Landing() {
 
       {/* Features */}
       <section className="py-24 px-6 relative section-video-container">
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1LC7neQMeTbD7CczshERITCrhOrAw3Dqc" opacity={0.05} />
+        <VideoBackground src="/videos/backgrounds/BG_05_anim.mp4" opacity={0.05} />
         <div className="absolute inset-0 z-[1] hex-bg opacity-30" />
         <div className="relative z-10 max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -98,7 +98,9 @@ function Landing() {
               const Icon = f.icon;
               return (
                 <div key={f.title} className="ps-card group hover:border-lime-border hover:-translate-y-0.5 transition-all relative overflow-hidden section-video-container">
-                  <VideoBackground src={f.video} opacity={0.08} className="group-hover:!opacity-25 transition-opacity duration-300" />
+                  {f.video && (
+                    <VideoBackground src={f.video} opacity={0.08} className="group-hover:!opacity-25 transition-opacity duration-300" />
+                  )}
                   <div className="relative z-10">
                     <Icon size={24} className="text-lime mb-4" />
                     <div className="flex items-center gap-2 mb-2">
@@ -117,7 +119,7 @@ function Landing() {
 
       {/* CTA */}
       <section className="section-video-container py-24 px-6 border-y border-graphite relative">
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1FgAIAcaeTGgvEQ-WdDNluYUpMDPR_G8E" opacity={0.15} />
+        <VideoBackground src="/videos/hero/HERO_04_anim.mp4" opacity={0.15} />
         <div className="absolute inset-0 z-[1]" style={{ background: "radial-gradient(ellipse at center, rgba(239,68,68,0.08), transparent 70%)" }} />
         <div className="relative z-10 text-center max-w-3xl mx-auto">
           <h2 className="display text-white" style={{ fontSize: "80px", lineHeight: 1 }}>CATCH THE BEACON</h2>

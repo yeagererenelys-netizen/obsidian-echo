@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader, StatCard } from "@/components/ps/Shell";
+import { PageHeader, StatCard } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
-import { MOCK_BEACONS } from "@/lib/mockData";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { X, Play, Flag, Download, Trash2 } from "lucide-react";
@@ -17,19 +16,63 @@ function generateTimingData(reg: number, count = 50) {
 }
 
 function Beaconing() {
-  const [beacons, setBeacons] = useState(MOCK_BEACONS);
+  const [beacons, setBeacons] = useState<any[]>([]);
   const [inspecting, setInspecting] = useState<number | null>(null);
   const [simRunning, setSimRunning] = useState(false);
   const [simProgress, setSimProgress] = useState(0);
   const simRef = useRef<ReturnType<typeof setInterval>>();
+  const wsRef = useRef<WebSocket | null>(null);
   const inspected = inspecting !== null ? beacons[inspecting] : null;
+
+  // Connect to WebSocket
+  useEffect(() => {
+    try {
+      const ws = new WebSocket("ws://localhost:8000/ws/beaconing");
+      wsRef.current = ws;
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.beacons) {
+            setBeacons(data.beacons.map((b: any) => ({
+              ip: b.ip,
+              dst: b.destination,
+              interval: `${b.interval.toFixed(1)}s`,
+              jitter: `${b.jitter.toFixed(1)}s`,
+              reg: b.regularity,
+              confidence: b.confidence,
+              events: b.eventCount,
+              duration: b.duration,
+              status: b.confidence > 85 ? "CONFIRMED BEACON" : "MONITORING",
+              sev: b.confidence > 85 ? "critical" : "warn",
+              protocol: b.protocol,
+              port: b.port,
+              payloadSize: b.payloadSize,
+            })));
+          }
+        } catch (e) {
+          console.error("Failed to parse beaconing data:", e);
+        }
+      };
+
+      ws.onerror = () => {
+        console.warn("Beaconing WebSocket failed");
+      };
+    } catch (e) {
+      console.error("Beaconing WebSocket error:", e);
+    }
+
+    return () => {
+      if (wsRef.current) wsRef.current.close();
+    };
+  }, []);
 
   const runSimulation = useCallback(() => {
     setSimRunning(true);
     setSimProgress(0);
     const simDevice = {
-      ip: "192.168.1.150",
-      dst: "203.0.113.42",
+      ip: "192.168.1.45", // changed to 192.168.1.45 per requirements for demo realism
+      dst: "167.88.162.34",
       interval: "30.0s",
       jitter: "8.2s",
       reg: 0.31,
@@ -40,7 +83,7 @@ function Beaconing() {
       sev: "warn" as const,
       protocol: "HTTPS",
       port: 443,
-      payloadSize: 200,
+      payloadSize: 180,
     };
     setBeacons(prev => [simDevice, ...prev]);
     let step = 0;
@@ -50,7 +93,7 @@ function Beaconing() {
       setSimProgress(progress);
       setBeacons(prev => {
         const updated = [...prev];
-        const idx = updated.findIndex(b => b.ip === "192.168.1.150");
+        const idx = updated.findIndex(b => b.ip === "192.168.1.45");
         if (idx >= 0) {
           updated[idx] = {
             ...updated[idx],
@@ -69,7 +112,7 @@ function Beaconing() {
         clearInterval(simRef.current);
         setSimRunning(false);
       }
-    }, 10000);
+    }, 2000); // Speed up for the user demo, usually this would be real-time
   }, []);
 
   useEffect(() => () => { if (simRef.current) clearInterval(simRef.current); }, []);
@@ -78,7 +121,7 @@ function Beaconing() {
     <div className="relative">
       {/* Hero */}
       <div className="ps-card !p-8 mb-6 relative overflow-hidden">
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1FTuD1bsR3sedbq_NwKEynFfxsDinW5_Z" opacity={0.15} />
+        <VideoBackground src="/videos/features/FEAT_04_anim.mp4" opacity={0.15} />
         <div className="relative z-10">
           <h1 className="display text-[64px] text-lime leading-none text-glow-lime">BEACONING DETECTOR</h1>
           <p className="text-silver mt-2">Inter-packet timing analysis · Detects C2 callbacks via regularity scoring</p>
@@ -93,15 +136,15 @@ function Beaconing() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <StatCard label="Suspicious Devices" value={String(beacons.length)} color="lime" />
-        <StatCard label="Highest Regularity" value={Math.max(...beacons.map(b => b.reg)).toFixed(2)} color="threat" />
+        <StatCard label="Highest Regularity" value={beacons.length > 0 ? Math.max(...beacons.map(b => b.reg)).toFixed(2) : "0.00"} color="threat" />
         <StatCard label="Avg Beacon Interval" value="30.0s" />
-        <StatCard label="Detection Confidence" value="98%" color="lime" hero />
+        <StatCard label="Detection Confidence" value={beacons.length > 0 ? `${Math.max(...beacons.map(b => b.confidence))}%` : "0%"} color="lime" hero />
       </div>
 
       {/* BG video */}
       <div className="relative">
         <div className="absolute inset-0 overflow-hidden rounded-lg" style={{ zIndex: 0 }}>
-          <VideoBackground src="https://drive.google.com/uc?export=download&id=1xP_EELoO_Fswsq55f0wKRAupEXbRHm_t" opacity={0.04} />
+          <VideoBackground src="/videos/backgrounds/BG_03_anim.mp4" opacity={0.04} />
         </div>
 
         {/* Table */}
@@ -236,7 +279,7 @@ function Beaconing() {
               <div className="ps-card mb-4">
                 <h3 className="display text-lg mb-3">RAW PACKET LOG (LAST 20)</h3>
                 <div className="max-h-[200px] overflow-y-auto">
-                  {Array.from({ length: 20 }, (_, i) => {
+                  {Array.from({ length: Math.min(inspected.events, 20) }, (_, i) => {
                     const t = new Date(Date.now() - i * 30000);
                     return (
                       <div key={i} className="flex justify-between mono text-[11px] py-1 border-b border-graphite/50">

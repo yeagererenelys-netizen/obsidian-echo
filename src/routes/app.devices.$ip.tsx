@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { StatCard } from "@/components/ps/Shell";
+import { StatCard } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
-import { MOCK_DEVICES, formatBytes } from "@/lib/mockData";
+import { formatBytes, MOCK_DEVICES } from "@/lib/mockData";
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from "recharts";
 import { Download, ArrowLeft } from "lucide-react";
 
@@ -54,7 +54,7 @@ function DeviceDetail() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1KewMdVzeXhXCGVfzVhSiTjjZmhV4-dQq" opacity={0.05} />
+        <VideoBackground src="/videos/backgrounds/BG_02_anim.mp4" opacity={0.05} />
       </div>
       <div className="relative z-10">
         <Link to="/app/devices" className="text-xs text-ghost hover:text-lime flex items-center gap-1 mb-4">
