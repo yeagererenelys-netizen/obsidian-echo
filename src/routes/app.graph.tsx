@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { MOCK_GRAPH_NODES, MOCK_GRAPH_EDGES } from "@/lib/mockData";
@@ -573,7 +574,7 @@ function CommunicationGraph() {
   return (
     <div className="relative w-full h-full">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="/videos/features/FEAT_03_anim.mp4" opacity={0.06} />
+        <VideoBackground src={VIDEOS.FEAT_03} opacity={0.06} />
       </div>
 
       <div className="relative z-10 w-full h-full flex flex-col">

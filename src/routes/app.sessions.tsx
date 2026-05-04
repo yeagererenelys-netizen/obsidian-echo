@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 import { useState } from "react";
 
 export const Route = createFileRoute("/app/sessions")({ component: Sessions });
@@ -20,7 +21,7 @@ function Sessions() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="/videos/features/FEAT_07_anim.mp4" opacity={0.07} />
+        <VideoBackground src={VIDEOS.FEAT_07} opacity={0.07} />
       </div>
       <div className="relative z-10">
         <PageHeader title="SESSION TIMELINE" subtitle="Reassembled flows · 5-tuple grouped" />

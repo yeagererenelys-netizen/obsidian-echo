@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { VideoBackground } from "./VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 
 const NAV = [
   { cat: "MAIN", items: [
@@ -54,7 +55,7 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="m-3 ps-card !p-3 relative overflow-hidden">
-        <VideoBackground src="/videos/brand/BRAND_01_anim.mp4" opacity={0.15} />
+        <VideoBackground src={VIDEOS.BRAND_01} opacity={0.15} />
         <div className="relative z-10">
           <div className="micro mb-2">Engine Status</div>
           <div className="flex items-center gap-2 mb-1"><span className="dot dot-lime" /><span className="text-xs text-white">RUNNING</span></div>
@@ -79,7 +80,7 @@ export function Topbar() {
         <span className="text-white text-sm font-bold -ml-1">Scope</span>
       </div>
       <div className="flex items-center gap-1.5 px-3 py-1 border border-lime-border rounded-sm bg-lime-dim/30 relative overflow-hidden">
-        <VideoBackground src="/videos/brand/BRAND_02_anim.mp4" opacity={0.3} />
+        <VideoBackground src={VIDEOS.BRAND_02} opacity={0.3} />
         <div className="relative z-10 flex items-center gap-1.5">
           <span className="dot dot-lime !w-2 !h-2" />
           <span className="mono text-[10px] text-lime tracking-wider">LIVE</span>
@@ -108,7 +109,7 @@ export function Topbar() {
 export function Shell() {
   return (
     <div className="min-h-screen bg-void text-white relative">
-      <video autoPlay muted loop playsInline className="fixed inset-0 w-full h-full object-cover z-0 opacity-[0.03] pointer-events-none" src="/videos/backgrounds/BG_01_anim.mp4" />
+      <video autoPlay muted loop playsInline className="fixed inset-0 w-full h-full object-cover z-0 opacity-[0.03] pointer-events-none" src={VIDEOS.BG_01} />
       <div className="relative z-10">
         <Topbar />
         <Sidebar />

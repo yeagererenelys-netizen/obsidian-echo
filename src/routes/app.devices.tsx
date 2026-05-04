@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ps/Layout";
 import { Monitor, Smartphone, Cpu, Wifi, HelpCircle } from "lucide-react";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 import { MOCK_DEVICES } from "@/lib/mockData";
 
 export const Route = createFileRoute("/app/devices")({ component: Devices });
@@ -19,7 +20,7 @@ function Devices() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="/videos/backgrounds/BG_01_anim.mp4" opacity={0.05} />
+        <VideoBackground src={VIDEOS.BG_01} opacity={0.05} />
       </div>
       
       <div className="relative z-10">
