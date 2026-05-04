@@ -6,6 +6,7 @@ import {
 import type { ReactNode } from "react";
 import { VideoBackground } from "./VideoBackground";
 import { VIDEOS } from "@/config/videoConfig";
+import { useAlertStore } from "@/hooks/useAlertStore";
 
 const NAV = [
   { cat: "MAIN", items: [
@@ -33,6 +34,8 @@ const NAV = [
 
 export function Sidebar() {
   const loc = useLocation();
+  const { unreadCount } = useAlertStore();
+
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-void border-r border-graphite flex flex-col z-40">
       <div className="h-[52px]" />
@@ -43,11 +46,13 @@ export function Sidebar() {
             {group.items.map(it => {
               const Icon = it.icon;
               const active = loc.pathname === it.to || (it.to === "/app/overview" && loc.pathname === "/app");
+              const isAlerts = it.to === "/app/alerts";
+              const badgeCount = isAlerts ? unreadCount : it.badge;
               return (
                 <Link key={it.to} to={it.to} className={`nav-item mx-2 ${active ? "active" : ""}`}>
                   <Icon size={16} className={active ? "text-lime" : "text-ghost"} />
                   <span className="flex-1">{it.label}</span>
-                  {it.badge && <span className="badge badge-threat">{it.badge}</span>}
+                  {badgeCount ? <span className="badge badge-threat">{badgeCount}</span> : null}
                 </Link>
               );
             })}

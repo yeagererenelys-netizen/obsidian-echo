@@ -6,6 +6,8 @@ import { MOCK_DEVICES, MOCK_ALERTS } from "@/lib/mockData";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { Plus, Download } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { usePacketStream } from "@/hooks/usePacketStream";
+import { useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/app/overview")({ component: Overview });
 
@@ -17,7 +19,151 @@ const talkers = MOCK_DEVICES.slice(0, 5).map(d => ({
   ip: d.ip, name: d.name, val: Math.floor((d.totalBytes / 2_140_000_000) * 100),
 }));
 
+function formatBytes(b: number): string {
+  if (b >= 1_000_000) return `${(b / 1_000_000).toFixed(1)} MB`;
+  if (b >= 1_000) return `${(b / 1_000).toFixed(1)} KB`;
+  return `${b} B`;
+}
+
+const PROTOCOL_COLORS: Record<string, string> = {
+  TCP:   "#a3ff12",  // lime
+  HTTPS: "#ffffff",  // white
+  HTTP:  "#eab308",  // yellow
+  DNS:   "#3b82f6",  // blue
+  UDP:   "#a0aec0",  // silver
+  ICMP:  "#ef4444",  // red
+  OTHER: "#444444",  // ash
+};
+
 function Overview() {
+  const { packetRate, totalPackets, isMockMode, isConnected, throughput, sessionCount, threatCount, deviceCount, lastPacket, subscribe } = usePacketStream();
+  console.log("STREAM FROM OVERVIEW:", { packetRate, totalPackets, throughput, sessionCount, threatCount, deviceCount, lastPacket });
+
+  interface TalkerEntry {
+    ip: string;
+    bytes: number;
+    percent: number;
+  }
+
+  const [topTalkers, setTopTalkers] = useState<TalkerEntry[]>([]);
+  const ipBytesRef = useRef<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    const unsub = subscribe((pkt) => {
+      const srcCurrent = ipBytesRef.current.get(pkt.src_ip) ?? 0;
+      ipBytesRef.current.set(pkt.src_ip, srcCurrent + pkt.bytes);
+
+      const dstCurrent = ipBytesRef.current.get(pkt.dst_ip) ?? 0;
+      ipBytesRef.current.set(pkt.dst_ip, dstCurrent + Math.floor(pkt.bytes * 0.3));
+    });
+    return unsub;
+  }, [subscribe]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const map = ipBytesRef.current;
+      if (map.size === 0) return;
+
+      const sorted = Array.from(map.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      const maxBytes = sorted[0]?.[1] ?? 1;
+
+      const entries: TalkerEntry[] = sorted.map(([ip, bytes]) => ({
+        ip,
+        bytes,
+        percent: Math.round((bytes / maxBytes) * 100),
+      }));
+
+      setTopTalkers(entries);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  interface ProtocolStat {
+    protocol: string;
+    count: number;
+    percent: number;
+  }
+
+  const [protocolStats, setProtocolStats] = useState<ProtocolStat[]>([]);
+  const protocolCounterRef = useRef<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    const unsub = subscribe((pkt) => {
+      const current = protocolCounterRef.current.get(pkt.protocol) ?? 0;
+      protocolCounterRef.current.set(pkt.protocol, current + 1);
+    });
+    return unsub;
+  }, [subscribe]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const map = protocolCounterRef.current;
+      const total = Array.from(map.values()).reduce((sum, n) => sum + n, 0);
+
+      if (total === 0) return;
+
+      const stats: ProtocolStat[] = Array.from(map.entries())
+        .map(([protocol, count]) => ({
+          protocol,
+          count,
+          percent: Math.round((count / total) * 100),
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      setProtocolStats(stats);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  interface ChartPoint {
+    time: string;
+    bytes: number;
+    packets: number;
+  }
+
+  const [chartData, setChartData] = useState<ChartPoint[]>([]);
+  const chartBufferRef = useRef<ChartPoint[]>([]);
+  const secondBytesRef = useRef(0);
+  const secondPacketsRef = useRef(0);
+
+  useEffect(() => {
+    const unsub = subscribe((pkt) => {
+      secondBytesRef.current += pkt.bytes;
+      secondPacketsRef.current += 1;
+    });
+    return unsub;
+  }, [subscribe]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const label = now.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+
+      const point: ChartPoint = {
+        time: label,
+        bytes: secondBytesRef.current,
+        packets: secondPacketsRef.current,
+      };
+
+      secondBytesRef.current = 0;
+      secondPacketsRef.current = 0;
+
+      chartBufferRef.current = [...chartBufferRef.current, point].slice(-60);
+      setChartData([...chartBufferRef.current]);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
@@ -26,7 +172,7 @@ function Overview() {
       <div className="relative z-10">
         <PageHeader
           title="OVERVIEW"
-          subtitle={<><span className="dot dot-lime" /> Network status · Updated live</>}
+          subtitle={<><span className="dot dot-lime" /> Network status · {isMockMode ? "SIMULATED" : isConnected ? "LIVE" : "DISCONNECTED"}</>}
           actions={<>
             <Link to="/app/capture" className="btn btn-primary"><Plus size={14} /> Start Capture</Link>
             <button className="btn btn-secondary"><Download size={14} /> Export Report</button>
@@ -34,10 +180,14 @@ function Overview() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <StatCard label="Active Sessions" value="1,847" trend="↑ 12% vs 1h" />
-          <StatCard label="Throughput" value="284" trend="MB/s · ↑ 8%" color="lime" hero />
-          <StatCard label="Active Threats" value="12" color="threat" trend="↑ 3 new in 1h" />
-          <StatCard label="Devices Online" value={String(MOCK_DEVICES.length)} trend="↑ 1 new" />
+          <StatCard label="Active Sessions" value={String(sessionCount)} trend="↑ 12% vs 1h" />
+          <StatCard label="Throughput" value={throughput > 1_000_000
+            ? `${(throughput / 1_000_000).toFixed(1)} MB/s`
+            : throughput > 1_000
+            ? `${(throughput / 1_000).toFixed(1)} KB/s`
+            : `${throughput} B/s`} trend="MB/s · ↑ 8%" color="lime" hero />
+          <StatCard label="Active Threats" value={String(threatCount)} color="threat" trend="↑ 3 new in 1h" />
+          <StatCard label="Devices Online" value={String(deviceCount)} trend="↑ 1 new" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
@@ -51,41 +201,70 @@ function Overview() {
               </div>
             </div>
             <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={traffic}>
+              <LineChart data={chartData}>
                 <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis dataKey="t" stroke="#4a5568" fontSize={10} fontFamily="JetBrains Mono" />
+                <XAxis dataKey="time" stroke="#4a5568" fontSize={10} fontFamily="JetBrains Mono" />
                 <YAxis stroke="#4a5568" fontSize={10} fontFamily="JetBrains Mono" />
                 <Tooltip contentStyle={{ background: "#080808", border: "1px solid #222", fontFamily: "JetBrains Mono", fontSize: 11 }} />
-                <Line type="monotone" dataKey="in" stroke="#a3ff12" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="out" stroke="#fff" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="bytes" stroke="#a3ff12" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                <Line type="monotone" dataKey="packets" stroke="#fff" strokeWidth={1.5} dot={false} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
             <div className="flex h-2 mt-4 rounded-sm overflow-hidden">
-              <div className="bg-lime" style={{ width: "42%" }} />
-              <div className="bg-white" style={{ width: "30%" }} />
-              <div className="bg-warn" style={{ width: "20%" }} />
-              <div className="bg-threat" style={{ width: "8%" }} />
+              {protocolStats.length === 0 ? (
+                <>
+                  <div className="bg-lime" style={{ width: "42%" }} />
+                  <div className="bg-white" style={{ width: "30%" }} />
+                  <div className="bg-warn" style={{ width: "20%" }} />
+                  <div className="bg-threat" style={{ width: "8%" }} />
+                </>
+              ) : (
+                protocolStats.map((item) => (
+                  <div key={item.protocol} style={{ width: `${item.percent}%`, backgroundColor: PROTOCOL_COLORS[item.protocol] || "#444444" }} />
+                ))
+              )}
             </div>
             <div className="flex justify-between mt-2 mono text-[10px] text-ghost">
-              <span>HTTP 42%</span><span>HTTPS 30%</span><span>DNS 20%</span><span>SUSPICIOUS 8%</span>
+              {protocolStats.length === 0 ? (
+                <><span>HTTP 42%</span><span>HTTPS 30%</span><span>DNS 20%</span><span>SUSPICIOUS 8%</span></>
+              ) : (
+                protocolStats.map((item) => (
+                  <span key={item.protocol}>{item.protocol} {item.percent}%</span>
+                ))
+              )}
             </div>
           </div>
 
           <div className="ps-card">
             <h3 className="display text-xl mb-4">TOP TALKERS</h3>
             <div className="space-y-3">
-              {talkers.map(t => (
-                <div key={t.ip}>
-                  <div className="flex justify-between mono text-xs mb-1">
-                    <span className="text-white">{t.ip}</span>
-                    <span className="text-ghost">{t.val}%</span>
+              {topTalkers.length === 0 ? (
+                talkers.map(t => (
+                  <div key={t.ip}>
+                    <div className="flex justify-between mono text-xs mb-1">
+                      <span className="text-white">{t.ip}</span>
+                      <span className="text-ghost">{t.val}%</span>
+                    </div>
+                    <div className="text-[10px] text-ghost mb-1">{t.name}</div>
+                    <div className="h-[3px] bg-carbon rounded-sm overflow-hidden">
+                      <div className="h-full bg-lime" style={{ width: `${t.val}%` }} />
+                    </div>
                   </div>
-                  <div className="text-[10px] text-ghost mb-1">{t.name}</div>
-                  <div className="h-[3px] bg-carbon rounded-sm overflow-hidden">
-                    <div className="h-full bg-lime" style={{ width: `${t.val}%` }} />
+                ))
+              ) : (
+                topTalkers.map(t => (
+                  <div key={t.ip}>
+                    <div className="flex justify-between mono text-xs mb-1">
+                      <span className="text-white">{t.ip}</span>
+                      <span className="text-ghost">{formatBytes(t.bytes)}</span>
+                    </div>
+                    <div className="text-[10px] text-ghost mb-1">LIVE NODE</div>
+                    <div className="h-[3px] bg-carbon rounded-sm overflow-hidden">
+                      <div className="h-full bg-lime" style={{ width: `${t.percent}%` }} />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

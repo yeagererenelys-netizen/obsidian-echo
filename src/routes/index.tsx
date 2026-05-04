@@ -29,7 +29,12 @@ const FEATURES = [
   { icon: FileArchive, title: "Evidence Packaging", body: "Export any flagged session as a filtered .pcap + JSON report. Opens in Wireshark. Forensic-grade.", tag: "dpkt · JSON", video: VIDEOS.FEAT_08 },
 ];
 
+import { usePacketStream } from "@/hooks/usePacketStream";
+
 function Landing() {
+  const stream = usePacketStream();
+  console.log("STREAM:", stream.totalPackets, stream.isMockMode, stream.packetRate, stream.lastPacket);
+
   return (
     <div className="bg-void text-white min-h-screen">
       {/* Hero */}
