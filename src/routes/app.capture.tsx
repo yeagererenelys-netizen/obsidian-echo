@@ -3,8 +3,10 @@ import { PageHeader } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
 import { VIDEOS } from "@/config/videoConfig";
 import { Play, Square, Activity } from "lucide-react";
-import { useState, useEffect, useRef, useCallback, memo } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { List } from "react-window";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { WS } from "@/config/apiConfig";
 
 export const Route = createFileRoute("/app/capture")({ component: Capture });
 
@@ -20,26 +22,6 @@ type Packet = {
   info: string;
   flags: string;
   ttl: number;
-};
-
-const generateMockPacket = (): Packet => {
-  const devices = ["192.168.1.1", "192.168.1.45", "192.168.1.89", "192.168.1.105", "192.168.1.200"];
-  const dests = ["142.250.80.100", "167.88.162.34", "185.220.101.45", "104.21.55.10", "8.8.8.8"];
-  const protocols = ["TCP", "UDP", "DNS", "HTTPS", "TLS"];
-  
-  return {
-    id: Math.floor(Math.random() * 1000000),
-    timestamp: new Date().toLocaleTimeString(),
-    src: devices[Math.floor(Math.random() * devices.length)],
-    dst: dests[Math.floor(Math.random() * dests.length)],
-    srcPort: Math.floor(Math.random() * 65536),
-    dstPort: Math.floor(Math.random() * 65536),
-    protocol: protocols[Math.floor(Math.random() * protocols.length)],
-    length: Math.floor(Math.random() * 1500) + 60,
-    info: "Network packet",
-    flags: "ACK",
-    ttl: Math.floor(Math.random() * 64) + 1,
-  };
 };
 
 const protoBadge = (p: string) => {
@@ -83,87 +65,53 @@ const Row = memo(({
 });
 
 function Capture() {
-  const [running, setRunning] = useState(false);
   const [packets, setPackets] = useState<Packet[]>([]);
-  const [iface, setIface] = useState("eth0");
-  const [interfaces, setInterfaces] = useState<{name: string, label: string}[]>([]);
-  const [bpf, setBpf] = useState("tcp and port 80");
+  const [capturing, setCapturing] = useState(false);
+  const [interfaces, setInterfaces] = useState<string[]>([]);
+  const [selectedIface, setSelectedIface] = useState("eth0");
+  const [bpf, setBpf] = useState("");
   const [elapsed, setElapsed] = useState(0);
-  const socketRef = useRef<WebSocket | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
-  const [backendOffline, setBackendOffline] = useState(false);
+  const [simulated, setSimulated] = useState(false);
 
-  // Load interfaces
+  const { connected, send } = useWebSocket(WS.CAPTURE, (data: any) => {
+    if (data.type === "packets") {
+      setPackets(prev => [...data.data, ...prev].slice(0, 10000));
+    }
+    if (data.type === "interfaces") {
+      setInterfaces(["Simulated Traffic", ...data.interfaces]);
+      setSelectedIface("Simulated Traffic");
+    }
+    if (data.type === "status") {
+      if (data.status === "capturing") {
+        setSimulated(data.simulated || false);
+      }
+      if (data.status === "stopped") {
+        setCapturing(false);
+      }
+    }
+  });
+
+  // On mount — fetch interfaces
   useEffect(() => {
-    // In a real app, this would be a WebSocket call or API
-    setInterfaces([
-      { name: "eth0", label: "eth0 (Ethernet)" },
-      { name: "wlan0", label: "wlan0 (Wi-Fi)" },
-      { name: "lo", label: "lo (Loopback)" },
-      { name: "docker0", label: "docker0 (Docker)" },
-    ]);
-  }, []);
+    if (connected) send({ action: "list_interfaces" });
+  }, [connected, send]);
 
-  const startSimulatedCapture = () => {
-    const interval = setInterval(() => {
-      const batch = Array.from({ length: 1 + Math.floor(Math.random() * 3) }, () => generateMockPacket());
-      setPackets(prev => [...batch, ...prev].slice(0, 10000));
-    }, 150);
-    // Store interval to clear later
-    (socketRef as any).currentSim = interval;
-  };
-
-  const startCapture = useCallback(() => {
-    setRunning(true);
+  const startCapture = () => {
+    send({ action: "start", interface: selectedIface, filter: bpf });
+    setCapturing(true);
     setPackets([]);
     setElapsed(0);
-    setBackendOffline(false);
-
-    // Try WebSocket connection
-    try {
-      const ws = new WebSocket("ws://localhost:8000/ws/capture");
-      socketRef.current = ws;
-
-      ws.onopen = () => {
-        ws.send(JSON.stringify({ action: "start", interface: iface, filter: bpf }));
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          // Handle both single packet and array of packets
-          const packets_arr = Array.isArray(data) ? data : [data];
-          setPackets(prev => [...packets_arr, ...prev].slice(0, 10000));
-        } catch (e) {
-          console.error("Failed to parse packet:", e);
-        }
-      };
-
-      ws.onerror = () => {
-        setBackendOffline(true);
-        startSimulatedCapture();
-      };
-    } catch (e) {
-      setBackendOffline(true);
-      startSimulatedCapture();
-    }
-
     timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
-  }, [iface, bpf]);
+  };
 
-  const stopCapture = useCallback(() => {
-    setRunning(false);
-    if (socketRef.current) {
-      if (socketRef.current.readyState === WebSocket.OPEN) {
-        socketRef.current.send(JSON.stringify({ action: "stop" }));
-      }
-      socketRef.current.close();
-    }
-    if ((socketRef as any).currentSim) clearInterval((socketRef as any).currentSim);
+  const stopCapture = () => {
+    send({ action: "stop" });
+    setCapturing(false);
     if (timerRef.current) clearInterval(timerRef.current);
-  }, []);
+  };
 
-  useEffect(() => () => { stopCapture(); }, [stopCapture]);
+  useEffect(() => () => { stopCapture(); }, []);
 
   const hh = String(Math.floor(elapsed / 3600)).padStart(2, "0");
   const mm = String(Math.floor((elapsed % 3600) / 60)).padStart(2, "0");
@@ -179,26 +127,28 @@ function Capture() {
           title="LIVE CAPTURE"
           subtitle={
             <div className="flex items-center gap-2">
-              <span className={`dot ${running ? 'dot-lime animate-pulse' : 'dot-ghost'}`} />
-              {running ? `Capturing on ${iface} · ${packets.length.toLocaleString()} packets` : "Engine Idle"}
-              {backendOffline && running && <span className="badge badge-warn text-[10px]">SIMULATED</span>}
+              <span className={`dot ${capturing ? 'dot-lime animate-pulse' : 'dot-ghost'}`} />
+              {capturing ? `Capturing on ${selectedIface} · ${packets.length.toLocaleString()} packets` : "Engine Idle"}
+              {!connected && <span className="badge badge-danger text-[10px]">OFFLINE</span>}
+              {simulated && capturing && <span className="badge badge-warn text-[10px]">SIMULATED</span>}
             </div>
           }
         />
 
         <div className="ps-card !p-3 mb-4 flex items-center gap-3 flex-wrap">
           <button
-            onClick={() => running ? stopCapture() : startCapture()}
-            className={`btn ${running ? "btn-danger" : "btn-primary"} min-w-[160px]`}
+            onClick={() => capturing ? stopCapture() : startCapture()}
+            disabled={!connected}
+            className={`btn ${capturing ? "btn-danger" : "btn-primary"} min-w-[160px]`}
           >
-            {running ? <><Square size={14} /> STOP CAPTURE</> : <><Play size={14} /> START CAPTURE</>}
+            {capturing ? <><Square size={14} /> STOP CAPTURE</> : <><Play size={14} /> START CAPTURE</>}
           </button>
 
           <div className="flex items-center bg-carbon rounded px-2 border border-graphite">
             <Activity size={14} className="text-ghost ml-1" />
-            <select className="bg-transparent border-none mono text-[11px] text-white py-1 focus:ring-0 cursor-pointer" value={iface} onChange={e => setIface(e.target.value)}>
+            <select className="bg-transparent border-none mono text-[11px] text-white py-1 focus:ring-0 cursor-pointer" value={selectedIface} onChange={e => setSelectedIface(e.target.value)}>
               {interfaces.map(i => (
-                <option key={i.name} value={i.name} className="bg-obsidian">{i.label} {backendOffline ? '(simulated)' : ''}</option>
+                <option key={i} value={i} className="bg-obsidian">{i}</option>
               ))}
             </select>
           </div>
@@ -213,7 +163,7 @@ function Capture() {
           <div className="flex items-center gap-4">
             <div className="display text-[22px] text-white mono">{hh}:{mm}:{ss}</div>
             <div className="w-24 h-1 bg-carbon rounded overflow-hidden">
-              <div className={`h-full bg-lime rounded ${running ? 'animate-pulse' : ''}`} style={{ width: running ? "100%" : "0%" }} />
+              <div className={`h-full bg-lime rounded ${capturing ? 'animate-pulse' : ''}`} style={{ width: capturing ? "100%" : "0%" }} />
             </div>
           </div>
         </div>
@@ -239,11 +189,11 @@ function Capture() {
             style={{ height: 550, width: "100%" }}
           />
 
-          {packets.length === 0 && !running && (
+          {packets.length === 0 && !capturing && (
             <div className="flex flex-col items-center justify-center py-24 text-ghost space-y-4">
               <div className="display text-[80px] opacity-10">⬡</div>
               <div className="text-sm">READY FOR CAPTURE</div>
-              <button onClick={startCapture} className="btn btn-ghost !text-xs">INITIATE SESSION</button>
+              <button onClick={startCapture} disabled={!connected} className="btn btn-ghost !text-xs">INITIATE SESSION</button>
             </div>
           )}
         </div>

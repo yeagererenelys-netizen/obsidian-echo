@@ -4,6 +4,8 @@ import { VIDEOS } from "@/config/videoConfig";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { MOCK_GRAPH_NODES, MOCK_GRAPH_EDGES } from "@/lib/mockData";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { WS } from "@/config/apiConfig";
 
 export const Route = createFileRoute("/app/graph")({ component: CommunicationGraph });
 
@@ -248,46 +250,31 @@ function CommunicationGraph() {
     }
   }, []);
 
-  useEffect(() => {
-    let alive = true;
-    let ws: WebSocket | null = null;
-
-    try {
-      ws = new WebSocket("ws://localhost:8000/ws/graph");
-      ws.onopen = () => {
-        if (!alive) return;
-        setBackendOffline(false);
-        stopMockStream();
-      };
-      ws.onmessage = event => {
-        if (!alive) return;
-        try {
-          const data = JSON.parse(event.data);
-          if (data.nodes) setNodes(data.nodes);
-          if (data.edges) setLinks(data.edges);
-          setBackendOffline(false);
-        } catch (error) {
-          console.error("Failed to parse graph data:", error);
-        }
-      };
-      ws.onerror = () => {
-        if (!alive) return;
-        startMockStream();
-      };
-      ws.onclose = () => {
-        if (!alive) return;
-        startMockStream();
-      };
-    } catch (error) {
-      if (alive) startMockStream();
-    }
-
-    return () => {
-      alive = false;
-      if (ws) ws.close();
+  const { connected } = useWebSocket(WS.GRAPH, (data: any) => {
+    if (data.nodes) {
+      setNodes(prev => {
+        const existing = new Map(prev.map(n => [n.id, n]));
+        return data.nodes.map((n: Node) => {
+          const old = existing.get(n.id);
+          if (old) {
+            return { ...old, ...n, x: old.x, y: old.y, vx: old.vx, vy: old.vy };
+          }
+          return n;
+        });
+      });
+      if (data.edges) setLinks(data.edges);
+      setBackendOffline(false);
       stopMockStream();
-    };
-  }, [startMockStream, stopMockStream]);
+    }
+  });
+
+  useEffect(() => {
+    if (!connected) {
+      startMockStream();
+    }
+    // We intentionally do not call stopMockStream here,
+    // so the initial mock graph continues animating until real data arrives.
+  }, [connected, startMockStream]);
 
   useEffect(() => {
     if (!containerRef.current) return;
