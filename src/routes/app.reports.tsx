@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader } from "@/components/ps/Shell";
+import { PageHeader } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
 import { FileText, Download } from "lucide-react";
 
@@ -24,7 +24,7 @@ function Reports() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1k58KzilpIgYdTOlFEQL6cV9F5-pjQ84Q" opacity={0.06} />
+        <VideoBackground src="/videos/hero/HERO_05_anim.mp4" opacity={0.06} />
       </div>
       <div className="relative z-10">
         <PageHeader title="REPORTS" subtitle="Generated forensic and summary reports" actions={<button className="btn btn-primary">Generate New</button>} />
