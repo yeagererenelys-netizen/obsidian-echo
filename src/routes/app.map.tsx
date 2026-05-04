@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 import { MOCK_MAP_CONNECTIONS } from "@/lib/mockData";
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker } from "react-leaflet";
@@ -45,7 +46,7 @@ function WorldMap() {
       <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
         {/* Map Container */}
         <div className="col-span-9 ps-card !p-0 relative overflow-hidden flex-1 min-h-[560px]">
-          <VideoBackground src="/videos/features/FEAT_06_anim.mp4" opacity={0.08} />
+          <VideoBackground src={VIDEOS.FEAT_06} opacity={0.08} />
           
           <MapContainer 
             center={[20, 0]} 
@@ -130,7 +131,7 @@ function WorldMap() {
         {/* Sidebar */}
         <div className="col-span-3 space-y-4 flex flex-col min-h-0">
           <div className="ps-card relative overflow-hidden min-h-[100px]">
-            <VideoBackground src="/videos/backgrounds/BG_04_anim.mp4" opacity={0.4} />
+            <VideoBackground src={VIDEOS.BG_04} opacity={0.4} />
             <div className="relative z-10">
               <div className="micro mb-1">Active Connections</div>
               <div className="display text-[48px] text-lime leading-none animate-pulse-slow">{activeConns.length}</div>

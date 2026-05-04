@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 import { Play, Square, Activity } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { List } from "react-window";
@@ -171,7 +172,7 @@ function Capture() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="/videos/features/FEAT_01_anim.mp4" opacity={0.12} />
+        <VideoBackground src={VIDEOS.FEAT_01} opacity={0.12} />
       </div>
       <div className="relative z-10">
         <PageHeader
