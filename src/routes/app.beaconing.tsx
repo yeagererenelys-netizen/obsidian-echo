@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, StatCard } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { X, Play, Flag, Download, Trash2 } from "lucide-react";
@@ -121,7 +122,7 @@ function Beaconing() {
     <div className="relative">
       {/* Hero */}
       <div className="ps-card !p-8 mb-6 relative overflow-hidden">
-        <VideoBackground src="/videos/features/FEAT_04_anim.mp4" opacity={0.15} />
+        <VideoBackground src={VIDEOS.FEAT_04} opacity={0.15} />
         <div className="relative z-10">
           <h1 className="display text-[64px] text-lime leading-none text-glow-lime">BEACONING DETECTOR</h1>
           <p className="text-silver mt-2">Inter-packet timing analysis · Detects C2 callbacks via regularity scoring</p>
@@ -144,7 +145,7 @@ function Beaconing() {
       {/* BG video */}
       <div className="relative">
         <div className="absolute inset-0 overflow-hidden rounded-lg" style={{ zIndex: 0 }}>
-          <VideoBackground src="/videos/backgrounds/BG_03_anim.mp4" opacity={0.04} />
+          <VideoBackground src={VIDEOS.BG_03} opacity={0.04} />
         </div>
 
         {/* Table */}

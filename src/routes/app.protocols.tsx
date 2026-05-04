@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 import { useState } from "react";
 
 export const Route = createFileRoute("/app/protocols")({ component: Protocols });
@@ -12,7 +13,7 @@ function Protocols() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="/videos/hero/HERO_03_anim.mp4" opacity={0.08} />
+        <VideoBackground src={VIDEOS.HERO_03} opacity={0.08} />
       </div>
       <div className="relative z-10">
         <PageHeader title="PROTOCOL INSPECTOR" subtitle="Deep parsed forensic records" />

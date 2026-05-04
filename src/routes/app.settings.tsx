@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 import { useState } from "react";
 
 export const Route = createFileRoute("/app/settings")({ component: Settings });
@@ -32,7 +33,7 @@ function Settings() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="/videos/brand/BRAND_02_anim.mp4" opacity={0.08} />
+        <VideoBackground src={VIDEOS.BRAND_02} opacity={0.08} />
       </div>
       <div className="relative z-10">
         <PageHeader title="SETTINGS" />

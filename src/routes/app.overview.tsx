@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, StatCard } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
+import { VIDEOS } from "@/config/videoConfig";
 import { MOCK_DEVICES, MOCK_ALERTS } from "@/lib/mockData";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { Plus, Download } from "lucide-react";
@@ -20,7 +21,7 @@ function Overview() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="/videos/hero/HERO_02_anim.mp4" opacity={0.06} />
+        <VideoBackground src={VIDEOS.HERO_02} opacity={0.06} />
       </div>
       <div className="relative z-10">
         <PageHeader
