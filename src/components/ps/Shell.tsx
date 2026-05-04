@@ -54,7 +54,7 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="m-3 ps-card !p-3 relative overflow-hidden">
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=11D299SnmTt0Ntw40uNzJaKvwJv_5dF_Q" opacity={0.15} />
+        <VideoBackground src="/videos/brand/BRAND_01_anim.mp4" opacity={0.15} />
         <div className="relative z-10">
           <div className="micro mb-2">Engine Status</div>
           <div className="flex items-center gap-2 mb-1"><span className="dot dot-lime" /><span className="text-xs text-white">RUNNING</span></div>
@@ -79,7 +79,7 @@ export function Topbar() {
         <span className="text-white text-sm font-bold -ml-1">Scope</span>
       </div>
       <div className="flex items-center gap-1.5 px-3 py-1 border border-lime-border rounded-sm bg-lime-dim/30 relative overflow-hidden">
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1f5s3YNZH4BoAVcL4jKfG-LAWymIlg6Mb" opacity={0.3} />
+        <VideoBackground src="/videos/brand/BRAND_02_anim.mp4" opacity={0.3} />
         <div className="relative z-10 flex items-center gap-1.5">
           <span className="dot dot-lime !w-2 !h-2" />
           <span className="mono text-[10px] text-lime tracking-wider">LIVE</span>
@@ -108,7 +108,7 @@ export function Topbar() {
 export function Shell() {
   return (
     <div className="min-h-screen bg-void text-white relative">
-      <video autoPlay muted loop playsInline className="fixed inset-0 w-full h-full object-cover z-0 opacity-[0.03] pointer-events-none" src="https://drive.google.com/uc?export=download&id=19zgOh6fQUCHJ-J5wbQqVAvuph-ISm3FQ" />
+      <video autoPlay muted loop playsInline className="fixed inset-0 w-full h-full object-cover z-0 opacity-[0.03] pointer-events-none" src="/videos/backgrounds/BG_01_anim.mp4" />
       <div className="relative z-10">
         <Topbar />
         <Sidebar />
@@ -118,34 +118,6 @@ export function Shell() {
           </div>
         </main>
       </div>
-    </div>
-  );
-}
-
-export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: ReactNode; actions?: ReactNode }) {
-  return (
-    <div className="flex items-start justify-between mb-6">
-      <div>
-        <h1 className="display text-[32px] leading-none text-white">{title}</h1>
-        {subtitle && <div className="text-xs text-ghost mt-2 flex items-center gap-2">{subtitle}</div>}
-      </div>
-      {actions && <div className="flex gap-2">{actions}</div>}
-    </div>
-  );
-}
-
-export function StatCard({ label, value, color = "white", trend, hero }: { label: string; value: string; color?: "white" | "lime" | "threat"; trend?: string; hero?: boolean }) {
-  const colorClass = color === "lime" ? "text-lime" : color === "threat" ? "text-threat" : "text-white";
-  return (
-    <div className={`ps-card ${hero ? "ps-card-lime" : ""}`}>
-      <div className="flex items-center justify-between mb-3">
-        <span className="micro">{label}</span>
-        <span className={`dot ${color === "threat" ? "dot-threat" : color === "lime" ? "dot-lime" : "dot-safe"}`} />
-      </div>
-      <div className={`display text-[56px] leading-none ${colorClass}`} style={color === "threat" ? { textShadow: "0 0 20px rgba(239,68,68,0.4)" } : undefined}>
-        {value}
-      </div>
-      {trend && <div className="text-xs text-safe mt-2 mono">{trend}</div>}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader, StatCard } from "@/components/ps/Shell";
+import { PageHeader, StatCard } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
 import { MOCK_ALERTS } from "@/lib/mockData";
 import { useState } from "react";
@@ -25,10 +25,10 @@ function Alerts() {
   return (
     <div className="relative">
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1-HA6JuxhFm6M1Qkcw7n8sapXAfGAd-QP" opacity={0.1} />
+        <VideoBackground src="/videos/hero/HERO_04_anim.mp4" opacity={0.1} />
       </div>
       <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=1xP_EELoO_Fswsq55f0wKRAupEXbRHm_t" opacity={0.04} />
+        <VideoBackground src="/videos/backgrounds/BG_03_anim.mp4" opacity={0.04} />
       </div>
       <div className="relative z-10">
         <PageHeader title="ALERTS & TRIAGE" subtitle={<><span className="dot dot-threat" /> 3 critical · 2 warn — last 1h</>} />

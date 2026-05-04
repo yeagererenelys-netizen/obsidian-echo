@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader, StatCard } from "@/components/ps/Shell";
+import { PageHeader, StatCard } from "@/components/ps/Layout";
 import { VideoBackground } from "@/components/ps/VideoBackground";
 import { MOCK_VPN } from "@/lib/mockData";
 import { useState } from "react";
@@ -22,7 +22,7 @@ function VPN() {
     <div className="relative">
       {/* Hero */}
       <div className="ps-card !p-8 mb-6 relative overflow-hidden">
-        <VideoBackground src="https://drive.google.com/uc?export=download&id=151PvK2UrU5GJ8L3M6spLu4ImhUd_HrzM" opacity={0.12} />
+        <VideoBackground src="/videos/features/FEAT_05_anim.mp4" opacity={0.12} />
         <div className="relative z-10">
           <h1 className="display text-[64px] text-white leading-none">VPN DETECTION ENGINE</h1>
           <p className="text-silver mt-2">Port fingerprinting · Protocol heuristics · Traffic pattern analysis</p>
