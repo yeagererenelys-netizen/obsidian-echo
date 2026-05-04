@@ -208,7 +208,11 @@ async def capture_ws(websocket: WebSocket):
                 elif msg.get("action") == "start":
                     iface = msg.get("interface", "eth0")
                     bpf = msg.get("filter", "")
-                    if SCAPY_AVAILABLE:
+                    
+                    if iface == "Simulated Traffic":
+                        await websocket.send_text(json.dumps({"type":"status","status":"capturing","simulated":True}))
+                        websocket.mock_task = asyncio.create_task(mock_packet_generator(packet_queue))
+                    elif SCAPY_AVAILABLE:
                         try:
                             sniffer = AsyncSniffer(
                                 iface=iface,
@@ -221,15 +225,17 @@ async def capture_ws(websocket: WebSocket):
                         except Exception as e:
                             await websocket.send_text(json.dumps({"type":"status","status":"error","message":str(e),"simulated":True}))
                             # Fall back to mock
-                            asyncio.create_task(mock_packet_generator(packet_queue))
+                            websocket.mock_task = asyncio.create_task(mock_packet_generator(packet_queue))
                     else:
                         await websocket.send_text(json.dumps({"type":"status","status":"capturing","simulated":True}))
-                        asyncio.create_task(mock_packet_generator(packet_queue))
+                        websocket.mock_task = asyncio.create_task(mock_packet_generator(packet_queue))
 
                 elif msg.get("action") == "stop":
                     if sniffer:
                         sniffer.stop()
                         sniffer = None
+                    if hasattr(websocket, 'mock_task'):
+                        websocket.mock_task.cancel()
                     await websocket.send_text(json.dumps({"type":"status","status":"stopped"}))
 
             except asyncio.TimeoutError:
@@ -298,10 +304,6 @@ async def graph_ws(websocket: WebSocket):
                     "threatLevel": 2 if conn["dst"] in ["185.220.101.45","167.88.162.34"] else 0,
                     "active": True
                 })
-
-            if not nodes:
-                # Mock fallback
-                nodes, edges = mock_graph_data()
 
             await websocket.send_text(json.dumps({"nodes": nodes, "edges": edges}))
             await asyncio.sleep(2)
