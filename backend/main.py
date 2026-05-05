@@ -6,8 +6,9 @@ import os
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+import tempfile
 
 # Handle both direct run and module run:
 # python backend/main.py  →  from capture import capture
@@ -71,6 +72,55 @@ async def list_interfaces():
         return {"interfaces": get_if_list()}
     except Exception as e:
         return {"interfaces": [], "error": str(e)}
+
+@app.post("/api/upload-pcap")
+async def upload_pcap(file: UploadFile = File(...)):
+    content = await file.read()
+    
+    def process_pcap(data):
+        from scapy.utils import PcapReader
+        import os
+        
+        packet_count = 0
+        tags = set()
+        
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp.write(data)
+            tmp_path = tmp.name
+            
+        try:
+            with PcapReader(tmp_path) as pr:
+                for pkt in pr:
+                    packet_count += 1
+                    if pkt.haslayer("TCP"):
+                        tags.add("tcp")
+                    elif pkt.haslayer("UDP"):
+                        tags.add("udp")
+                    elif pkt.haslayer("ICMP"):
+                        tags.add("icmp")
+                    elif pkt.haslayer("DNS"):
+                        tags.add("dns")
+                    
+                    if packet_count >= 50000:
+                        break
+        except Exception as e:
+            logger.error(f"Error parsing PCAP: {e}")
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+                
+        # Limit tags to max 3
+        final_tags = list(tags)[:3]
+        if not final_tags:
+            final_tags = ["clean"]
+            
+        return {
+            "packet_count": packet_count,
+            "tags": final_tags
+        }
+
+    result = await asyncio.to_thread(process_pcap, content)
+    return result
 
 # ──────────────────────────────────────────────────────────────
 # WebSocket — /ws/capture

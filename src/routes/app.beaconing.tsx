@@ -22,6 +22,24 @@ function Beaconing() {
   const [inspecting, setInspecting] = useState<number | null>(null);
   const inspected = inspecting !== null ? beaconDevices[inspecting] : null;
 
+  const handleExportEvidence = () => {
+    if (!inspected) return;
+    const evidence = {
+      type: "beacon_evidence",
+      timestamp: new Date().toISOString(),
+      device: inspected,
+    };
+    const blob = new Blob([JSON.stringify(evidence, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `beacon-evidence-${inspected.ip.replace(/\./g, '_')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="relative">
       {/* Hero */}
@@ -205,7 +223,7 @@ function Beaconing() {
               <div className="flex gap-2">
                 <button className="btn btn-danger"><Flag size={14} /> Flag as Beacon</button>
                 <button className="btn btn-ghost"><Trash2 size={14} /> Dismiss</button>
-                <button className="btn btn-primary"><Download size={14} /> Export Evidence</button>
+                <button onClick={handleExportEvidence} className="btn btn-primary"><Download size={14} /> Export Evidence</button>
               </div>
             </>
           )}

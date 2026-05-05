@@ -4,7 +4,7 @@ import logging
 from typing import Optional
 from scapy.sendrecv import AsyncSniffer
 from scapy.packet import Packet as ScapyPacket
-from packet_decoder import decode_packet
+from backend.packet_decoder import decode_packet
 
 logger = logging.getLogger(__name__)
 
