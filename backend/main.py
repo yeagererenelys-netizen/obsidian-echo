@@ -24,9 +24,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ──────────────────────────────────────────────────────────────
 # Lifespan — startup / shutdown
-# ──────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,9 +33,7 @@ async def lifespan(app: FastAPI):
     logger.info("PacketScope backend shutting down...")
     capture.stop()
 
-# ──────────────────────────────────────────────────────────────
 # App
-# ──────────────────────────────────────────────────────────────
 
 app = FastAPI(
     title="PacketScope Backend",
@@ -53,9 +49,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ──────────────────────────────────────────────────────────────
 # Health check
-# ──────────────────────────────────────────────────────────────
 
 @app.get("/api/health")
 async def health():
@@ -122,10 +116,8 @@ async def upload_pcap(file: UploadFile = File(...)):
     result = await asyncio.to_thread(process_pcap, content)
     return result
 
-# ──────────────────────────────────────────────────────────────
 # WebSocket — /ws/capture
 # This is the endpoint the frontend connects to.
-# ──────────────────────────────────────────────────────────────
 
 @app.websocket("/ws/capture")
 async def ws_capture(
@@ -145,8 +137,7 @@ async def ws_capture(
     started = capture.start(queue=queue, loop=loop, iface=iface, bpf_filter=filter)
 
     if not started:
-        # Send a special error message so the frontend knows why 
-        # it's falling back to mock mode
+        # Send a special error message so the frontend knows why it's falling back to mock mode
         await websocket.send_text(json.dumps({
             "error": "capture_failed",
             "reason": "Scapy requires root/admin privileges. "
@@ -157,8 +148,7 @@ async def ws_capture(
 
     try:
         while True:
-            # Wait for next packet from the queue (timeout avoids 
-            # blocking forever if no traffic)
+            # Wait for next packet from the queue (timeout avoids blocking forever if no traffic)
             try:
                 packet_dict = await asyncio.wait_for(
                     queue.get(), 
@@ -177,6 +167,6 @@ async def ws_capture(
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
     finally:
-        # For simplicity, if a client disconnects, we stop capture.
-        # If there are multiple clients, a better approach would be to refcount.
+        # If a client disconnects, we stop capture for simplicity.
+        # A better approach would be to refcount, if there are muktiple clients.
         capture.stop()
