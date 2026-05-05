@@ -1,6 +1,6 @@
-# PacketScope Backend
+# WhereIsMyPacket Backend
 
-This is the real packet-capturing backend for PacketScope, powered by FastAPI and Scapy. 
+This is the real packet-capturing backend for WhereIsMyPacket, powered by FastAPI and Scapy. 
 It captures live network traffic on the host machine, decodes it, and streams the raw packets over a WebSocket (`/ws/capture`) directly into the React frontend.
 
 ## Quick Start

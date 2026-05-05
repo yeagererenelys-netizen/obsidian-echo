@@ -1,4 +1,4 @@
-You are working on PacketScope — a Network Forensics Engine built in React 18 + Vite (frontend) with FastAPI + Scapy (Python backend) communicating via WebSockets. The design system is "Obsidian Terminal": true black (#000000), acid lime green (#a3ff12), arctic white (#f0f4ff), JetBrains Mono for all data, Bebas Neue for display numbers, Geist for UI copy. NO purple, NO navy anywhere.
+You are working on WhereIsMyPacket — a Network Forensics Engine built in React 18 + Vite (frontend) with FastAPI + Scapy (Python backend) communicating via WebSockets. The design system is "Obsidian Terminal": true black (#000000), acid lime green (#a3ff12), arctic white (#f0f4ff), JetBrains Mono for all data, Bebas Neue for display numbers, Geist for UI copy. NO purple, NO navy anywhere.
 
 The project has video assets already in /public/videos/ structured as:
 /public/videos/hero/HERO_01_anim.mp4, HERO_02_anim.mp4, HERO_03_anim.mp4, HERO_04_anim.mp4

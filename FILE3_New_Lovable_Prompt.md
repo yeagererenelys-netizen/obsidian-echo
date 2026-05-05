@@ -1,4 +1,4 @@
-# FILE 3 — PACKETSCOPE: NEW LOVABLE UI PROMPT
+# FILE 3 — WHEREISMYPACKET: NEW LOVABLE UI PROMPT
 # RADICAL REDESIGN — New color palette, new aesthetic, same full functionality
 # Aesthetic: Obsidian Terminal — True Black + Acid Lime + Arctic White
 # Performance-first: minimal DOM, no heavy gradients, GPU-accelerated only
@@ -244,7 +244,7 @@ Feature card clips (FEAT series): `opacity: 0.25`
 ## ════════════════════════════════════════════════════
 
 **Route:** `/landing` or `index.html` (public facing, before login)
-**Purpose:** The product page — explains what PacketScope is and why it is exceptional
+**Purpose:** The product page — explains what WhereIsMyPacket is and why it is exceptional
 
 ### 2.1 — Hero Section
 
@@ -256,7 +256,7 @@ Full viewport height section. `background: --void`. Position: relative.
 
 **Content (centered, z-index 1):**
 - Small top label: `[ NETWORK FORENSICS ENGINE ]` — JetBrains Mono 11px, letter-spacing 0.3em, color `--lime`, uppercase. Has a 1px lime border box, padding `4px 12px`, border-radius `3px`. Appears with a fade-in animation 0.3s delay.
-- Main headline: `"PacketScope"` in Bebas Neue, size `clamp(72px, 10vw, 140px)`. Color: pure white. Text-shadow: `0 0 60px rgba(163,255,18,0.3)` — very subtle green glow behind the white letters. Appears 0.5s after page load with a `translateY(20px) → translateY(0)` + fade animation.
+- Main headline: `"WhereIsMyPacket"` in Bebas Neue, size `clamp(72px, 10vw, 140px)`. Color: pure white. Text-shadow: `0 0 60px rgba(163,255,18,0.3)` — very subtle green glow behind the white letters. Appears 0.5s after page load with a `translateY(20px) → translateY(0)` + fade animation.
 - Sub-headline: `"See Everything. Miss Nothing."` — Geist 20px weight 300, color `--silver`. Appears 0.7s delay.
 - Description: A single clean sentence — "The open-source network forensics engine that captures, decodes, and visualizes everything crossing your network — live." — Geist 15px weight 300, color `--ghost`, max-width 480px, centered.
 - Two CTA buttons side by side, 1.0s delay:
@@ -353,17 +353,17 @@ Feature cards in order:
 Full-width section. Background video: `HERO_04_anim.mp4` (the threat alert pulse). Opacity 0.3.
 Content: Centered.
 - Headline: `"CATCH THE BEACON"` in Bebas Neue 80px white.
-- Sub: "Load a PCAP with a simulated C2 beacon — watch PacketScope flag it in under 3 seconds." Geist 16px silver.
+- Sub: "Load a PCAP with a simulated C2 beacon — watch WhereIsMyPacket flag it in under 3 seconds." Geist 16px silver.
 - `[  Open Dashboard →  ]` — large primary lime button
 
 ### 2.5 — Footer
 
 `background: --void`. `border-top: 1px solid --graphite`. Padding `40px`.
 Three columns:
-- Column 1: PacketScope logo + tagline + "Built for the CSE Networks Lab project"
+- Column 1: WhereIsMyPacket logo + tagline + "Built for the CSE Networks Lab project"
 - Column 2: Links — Dashboard, GitHub, Documentation, Attribution
 - Column 3: Attribution — "Built with Scapy, D3.js, MaxMind GeoLite2, React, FastAPI" — each as a small monospace tag
-Copyright: `© 2025 PacketScope — Open Source MIT License`
+Copyright: `© 2025 WhereIsMyPacket — Open Source MIT License`
 
 ---
 
@@ -820,7 +820,7 @@ Each is a monospace tag + Geist description. All properly cited. This satisfies 
 
 Background: `--void` (pure black)
 Center: `BRAND_03_anim.mp4` — the radar sweep animation plays as the background (full screen, 30% opacity)
-Foreground: PacketScope logo (hex + crosshair, 64px, lime) centered
+Foreground: WhereIsMyPacket logo (hex + crosshair, 64px, lime) centered
 Below logo: `"INITIALIZING CAPTURE ENGINE..."` in JetBrains Mono 11px `--ghost`, letter-spacing 0.2em
 A thin lime progress bar at the very bottom, 2px tall, fills from 0% to 100% over the load time
 No spinner. No skeleton on the splash — just the radar and the text.
@@ -939,7 +939,7 @@ const VideoBackground = ({ src, opacity }) => {
 ## SECTION 19 — FINAL BRIEF TO LOVABLE
 ## ════════════════════════════════════════════════════
 
-Build a complete 16-route React application called PacketScope — a Network Forensics Engine.
+Build a complete 16-route React application called WhereIsMyPacket — a Network Forensics Engine.
 
 THE DESIGN IDENTITY:
 - True black backgrounds (#000000 / #080808)

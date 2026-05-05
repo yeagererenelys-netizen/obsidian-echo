@@ -1,4 +1,4 @@
-# FILE 1 — PACKETSCOPE: ALL GEMINI IMAGE GENERATION PROMPTS
+# FILE 1 — WHEREISMYPACKET: ALL GEMINI IMAGE GENERATION PROMPTS
 # These are still images generated in Google Gemini (Imagen 3)
 # Each image will be fed into Google Flow / Veo 3 to animate into a video clip
 # Total: 22 images across Landing Page, Dashboard, and Feature sections
@@ -63,7 +63,7 @@ GEMINI PROMPT:
 
 ═══════════════════════════════════════════════════
 SECTION B — FEATURE SECTION IMAGES (8 images)
-Each is a visual metaphor for a specific PacketScope feature
+Each is a visual metaphor for a specific WhereIsMyPacket feature
 ═══════════════════════════════════════════════════
 
 IMAGE ID: FEAT_01
@@ -194,11 +194,11 @@ Logo, icons, social previews
 ═══════════════════════════════════════════════════
 
 IMAGE ID: BRAND_01
-PURPOSE: PacketScope logo concept
+PURPOSE: WhereIsMyPacket logo concept
 DIMENSIONS: 512×512px (square)
 
 GEMINI PROMPT:
-"A minimal, modern logo mark for a cybersecurity product called PacketScope. The logo is a perfect hexagon shape outlined in acid green (#a3ff12) on black. Inside the hexagon, a stylized crosshair/scope symbol made of thin lines — two perpendicular lines crossing in the center, with a small diamond shape at the intersection point. The crosshair lines extend slightly beyond where they intersect, giving a precision targeting feel. The overall logo is flat, vector-style, with no gradients — just pure acid green lines on black. The hexagon has thin rounded corners. Surrounded by a subtle acid green glow effect. Clean, technical, memorable. Like a logo a real cybersecurity startup would use."
+"A minimal, modern logo mark for a cybersecurity product called WhereIsMyPacket. The logo is a perfect hexagon shape outlined in acid green (#a3ff12) on black. Inside the hexagon, a stylized crosshair/scope symbol made of thin lines — two perpendicular lines crossing in the center, with a small diamond shape at the intersection point. The crosshair lines extend slightly beyond where they intersect, giving a precision targeting feel. The overall logo is flat, vector-style, with no gradients — just pure acid green lines on black. The hexagon has thin rounded corners. Surrounded by a subtle acid green glow effect. Clean, technical, memorable. Like a logo a real cybersecurity startup would use."
 
 ---
 
@@ -207,7 +207,7 @@ PURPOSE: OG image / social preview / loading screen
 DIMENSIONS: 1200×630px
 
 GEMINI PROMPT:
-"A social media preview image for a cybersecurity product. Wide format (1200x630). Black background with the subtle hexagonal grid pattern barely visible. Centered: the PacketScope hexagon-crosshair logo in acid green, large. Below the logo, the text 'PacketScope' in large bold white technical sans-serif font, and below that 'Network Forensics Engine' in smaller acid green monospace font. The text and logo have a very subtle green glow/bloom around them. The edges of the image fade to pure black vignette. Clean. Professional. Technical. Like a product announcement card from a real security company. Minimal. Powerful."
+"A social media preview image for a cybersecurity product. Wide format (1200x630). Black background with the subtle hexagonal grid pattern barely visible. Centered: the WhereIsMyPacket hexagon-crosshair logo in acid green, large. Below the logo, the text 'WhereIsMyPacket' in large bold white technical sans-serif font, and below that 'Network Forensics Engine' in smaller acid green monospace font. The text and logo have a very subtle green glow/bloom around them. The edges of the image fade to pure black vignette. Clean. Professional. Technical. Like a product announcement card from a real security company. Minimal. Powerful."
 
 ---
 
@@ -216,7 +216,7 @@ PURPOSE: Loading / splash screen background
 DIMENSIONS: 1920×1080px
 
 GEMINI PROMPT:
-"A cinematic loading screen background. Pure black. In the center, an animated (depicted as static single frame) scanning beam of acid green light sweeps in a circle — like a radar display. The sweep has left a faint green trail showing where it has already passed, fading to black behind it. The current sweep edge is a bright concentrated line of green light. Beyond the central radar circle, subtle grid lines extend outward. The overall image shows a single frame of a radar scan mid-sweep. The PacketScope hexagonal logo is subtly visible in the radar center — integrated into the design, not floating above it. Cinematic. Dark. Like the boot screen of a high-end security appliance."
+"A cinematic loading screen background. Pure black. In the center, an animated (depicted as static single frame) scanning beam of acid green light sweeps in a circle — like a radar display. The sweep has left a faint green trail showing where it has already passed, fading to black behind it. The current sweep edge is a bright concentrated line of green light. Beyond the central radar circle, subtle grid lines extend outward. The overall image shows a single frame of a radar scan mid-sweep. The WhereIsMyPacket hexagonal logo is subtly visible in the radar center — integrated into the design, not floating above it. Cinematic. Dark. Like the boot screen of a high-end security appliance."
 
 ---
 

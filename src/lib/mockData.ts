@@ -1,4 +1,4 @@
-// ─── PacketScope Mock Data — consistent across all pages ───
+// ─── WhereIsMyPacket Mock Data — consistent across all pages ───
 
 export const MOCK_DEVICES = [
   { ip: "192.168.1.1", name: "Gateway Router", mac: "A8:5E:45:F3:21:0A", model: "ASUS RT-AX88U", type: "router", anomaly: 12, firstSeen: "2025-04-28 08:12:00", lastSeen: "now", totalPackets: 184210, totalBytes: 2_140_000_000, sessions: 842, uniqueDests: 18, topProtos: { HTTP: 30, HTTPS: 50, DNS: 15, Other: 5 } },

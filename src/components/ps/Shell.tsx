@@ -86,8 +86,7 @@ export function Topbar() {
     >
       <div className="flex items-center gap-2 w-[200px]">
         <Hexagon size={20} className="text-lime" />
-        <span className="text-silver text-sm">Packet</span>
-        <span className="text-white text-sm font-bold -ml-1">Scope</span>
+        <span className="text-white text-sm font-bold">WhereIsMyPacket</span>
       </div>
       <div className="flex items-center gap-1.5 px-3 py-1 border border-lime-border rounded-sm bg-lime-dim/30 relative overflow-hidden">
         <VideoBackground src={VIDEOS.BRAND_02} opacity={0.3} />

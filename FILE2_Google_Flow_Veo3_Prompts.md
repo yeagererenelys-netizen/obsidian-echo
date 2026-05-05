@@ -229,7 +229,7 @@ DURATION: 3 seconds, plays once
 USAGE: App loading screen / splash intro animation
 
 FLOW ANIMATION PROMPT:
-"Animate this logo with a cinematic reveal sequence. Begin with pure black — nothing visible. At 0.3 seconds, the hexagon outline begins drawing itself — starting from the top point and traveling clockwise around the hexagon shape, the green line traces itself into existence over 0.8 seconds. At 1.1 seconds, the crosshair lines inside draw themselves — the horizontal line draws left to right simultaneously with the vertical line drawing top to bottom, meeting at the center diamond. At 1.5 seconds, the diamond flashes bright white once. At 1.7 seconds, the entire logo pulses with a subtle green glow bloom that expands outward and quickly dissipates. At 2.0 seconds, 'PacketScope' fades in below the logo in clean white text. Hold at 3.0 seconds. The animation is precise and satisfying — like a system booting to ready state."
+"Animate this logo with a cinematic reveal sequence. Begin with pure black — nothing visible. At 0.3 seconds, the hexagon outline begins drawing itself — starting from the top point and traveling clockwise around the hexagon shape, the green line traces itself into existence over 0.8 seconds. At 1.1 seconds, the crosshair lines inside draw themselves — the horizontal line draws left to right simultaneously with the vertical line drawing top to bottom, meeting at the center diamond. At 1.5 seconds, the diamond flashes bright white once. At 1.7 seconds, the entire logo pulses with a subtle green glow bloom that expands outward and quickly dissipates. At 2.0 seconds, 'WhereIsMyPacket' fades in below the logo in clean white text. Hold at 3.0 seconds. The animation is precise and satisfying — like a system booting to ready state."
 
 ---
 
@@ -239,7 +239,7 @@ DURATION: 5 seconds, loops gently
 USAGE: Splash screen / loading state background
 
 FLOW ANIMATION PROMPT:
-"Animate this branded card with a subtle breathing glow effect. The PacketScope logo's green glow slowly expands and contracts — like breathing — over a 2.5 second cycle. At peak glow, the hexagonal grid in the background becomes very slightly more visible, then fades back. The text elements are static. The vignette at the edges slowly pulses — slightly darker at breath peak, slightly lighter in between. A very subtle scan line sweeps slowly from top to bottom over 5 seconds — a single 1px horizontal line of faint green light that travels down the entire height — then the scan restarts. This is a premium logo splash with maximum subtlety. The overall impression: the brand is alive and watchful."
+"Animate this branded card with a subtle breathing glow effect. The WhereIsMyPacket logo's green glow slowly expands and contracts — like breathing — over a 2.5 second cycle. At peak glow, the hexagonal grid in the background becomes very slightly more visible, then fades back. The text elements are static. The vignette at the edges slowly pulses — slightly darker at breath peak, slightly lighter in between. A very subtle scan line sweeps slowly from top to bottom over 5 seconds — a single 1px horizontal line of faint green light that travels down the entire height — then the scan restarts. This is a premium logo splash with maximum subtlety. The overall impression: the brand is alive and watchful."
 
 ---
 
@@ -249,7 +249,7 @@ DURATION: 6 seconds, loops
 USAGE: Application loading / initialization screen
 
 FLOW ANIMATION PROMPT:
-"Animate this loading screen radar with a continuous radar sweep and a loading progress system. The radar arm sweeps continuously clockwise — one full rotation every 3 seconds. As it sweeps, the trail it leaves brightens the regions it has covered, then fades as the arm moves away. The PacketScope logo at the center is always visible and stable. The grid lines in the background have a very subtle pulse that syncs with the radar sweep — slightly brightening when the arm passes nearby. As the loading completes (conceptually, over 6 seconds), the radar sweep speeds up very slightly and the overall brightness increases — from dim to slightly brighter — suggesting the system is achieving readiness. No progress bar — just the radar sweep as the loading metaphor. After 6 seconds, the loop restarts at the original slower speed."
+"Animate this loading screen radar with a continuous radar sweep and a loading progress system. The radar arm sweeps continuously clockwise — one full rotation every 3 seconds. As it sweeps, the trail it leaves brightens the regions it has covered, then fades as the arm moves away. The WhereIsMyPacket logo at the center is always visible and stable. The grid lines in the background have a very subtle pulse that syncs with the radar sweep — slightly brightening when the arm passes nearby. As the loading completes (conceptually, over 6 seconds), the radar sweep speeds up very slightly and the overall brightness increases — from dim to slightly brighter — suggesting the system is achieving readiness. No progress bar — just the radar sweep as the loading metaphor. After 6 seconds, the loop restarts at the original slower speed."
 
 ---
 

@@ -8,9 +8,9 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PacketScope — Network Forensics Engine" },
+      { title: "WhereIsMyPacket — Network Forensics Engine" },
       { name: "description", content: "Open-source network forensics engine that captures, decodes, and visualizes everything crossing your network — live." },
-      { property: "og:title", content: "PacketScope — Network Forensics Engine" },
+      { property: "og:title", content: "WhereIsMyPacket — Network Forensics Engine" },
       { property: "og:description", content: "See Everything. Miss Nothing." },
     ],
   }),
@@ -48,7 +48,7 @@ function Landing() {
             <span className="mono text-[11px] tracking-[0.3em] text-lime">[ NETWORK FORENSICS ENGINE ]</span>
           </div>
           <h1 className="fade-up delay-2 display text-glow-lime text-white mt-6" style={{ fontSize: "clamp(72px, 10vw, 140px)", lineHeight: "0.9" }}>
-            PacketScope
+            WhereIsMyPacket
           </h1>
           <p className="fade-up delay-3 text-silver mt-4" style={{ fontSize: "20px", fontWeight: 300 }}>
             See Everything. Miss Nothing.
@@ -130,7 +130,7 @@ function Landing() {
         <div className="relative z-10 text-center max-w-3xl mx-auto">
           <h2 className="display text-white" style={{ fontSize: "80px", lineHeight: 1 }}>CATCH THE BEACON</h2>
           <p className="text-silver mt-4 text-base">
-            Load a PCAP with a simulated C2 beacon — watch PacketScope flag it in under 3 seconds.
+            Load a PCAP with a simulated C2 beacon — watch WhereIsMyPacket flag it in under 3 seconds.
           </p>
           <Link to="/app/overview" className="btn btn-primary !text-[15px] !py-3 !px-8 mt-8 inline-flex">
             Open Dashboard <ArrowRight size={16} />
@@ -144,7 +144,7 @@ function Landing() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-lime display text-2xl">⬡</span>
-              <span className="text-white font-bold">PacketScope</span>
+              <span className="text-white font-bold">WhereIsMyPacket</span>
             </div>
             <p className="text-xs text-ghost">Built for the CSE Networks Lab project.</p>
           </div>
@@ -167,7 +167,7 @@ function Landing() {
           </div>
         </div>
         <div className="max-w-6xl mx-auto mt-10 pt-6 border-t border-graphite text-center mono text-[11px] text-ghost">
-          © 2025 PacketScope — Open Source MIT License
+          © 2025 WhereIsMyPacket — Open Source MIT License
         </div>
       </footer>
     </div>

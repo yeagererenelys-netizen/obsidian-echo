@@ -30,17 +30,17 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("PacketScope backend starting...")
+    logger.info("WhereIsMyPacket backend starting...")
     # Pre-resolve popular sites so their IPs are labelled correctly from the start
     await pre_resolve_popular_sites()
     yield
-    logger.info("PacketScope backend shutting down...")
+    logger.info("WhereIsMyPacket backend shutting down...")
     capture.stop()
 
 # App
 
 app = FastAPI(
-    title="PacketScope Backend",
+    title="WhereIsMyPacket Backend",
     version="1.0.0",
     lifespan=lifespan,
 )

@@ -4,8 +4,8 @@ import { LogIn } from "lucide-react";
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Sign Up — PacketScope" },
-      { name: "description", content: "Create your PacketScope account to start monitoring your network." },
+      { title: "Sign Up — WhereIsMyPacket" },
+      { name: "description", content: "Create your WhereIsMyPacket account to start monitoring your network." },
     ],
   }),
   component: SignUp,
@@ -17,7 +17,7 @@ function SignUp() {
       <div className="w-full max-w-md space-y-8">
         <div>
           <h1 className="text-4xl font-bold">Sign Up</h1>
-          <p className="text-silver mt-2">Create a new PacketScope account and get started.</p>
+          <p className="text-silver mt-2">Create a new WhereIsMyPacket account and get started.</p>
         </div>
 
         <form

@@ -3,8 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/signin")({
   head: () => ({
     meta: [
-      { title: "Sign In — PacketScope" },
-      { name: "description", content: "Sign in to your PacketScope network forensics dashboard." },
+      { title: "Sign In — WhereIsMyPacket" },
+      { name: "description", content: "Sign in to your WhereIsMyPacket network forensics dashboard." },
     ],
   }),
   component: SignIn,
@@ -16,7 +16,7 @@ function SignIn() {
       <div className="w-full max-w-md space-y-8">
         <div>
           <h1 className="text-4xl font-bold">Sign In</h1>
-          <p className="text-silver mt-2">Enter your credentials to access PacketScope.</p>
+          <p className="text-silver mt-2">Enter your credentials to access WhereIsMyPacket.</p>
         </div>
 
         <form
@@ -44,7 +44,7 @@ function SignIn() {
           <Link to="/app/overview" className="btn btn-primary w-full py-3 inline-flex justify-center">Sign In</Link>
 
           <div className="text-center text-sm text-silver">
-            New to PacketScope?{' '}
+            New to WhereIsMyPacket?{' '}
             <Link to="/signup" className="text-lime hover:text-white">
               Create account
             </Link>

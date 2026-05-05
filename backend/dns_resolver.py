@@ -1,5 +1,5 @@
 """
-dns_resolver.py — Async, non-blocking reverse DNS cache for PacketScope.
+dns_resolver.py — Async, non-blocking reverse DNS cache for WhereIsMyPacket.
 
 How it works:
   - All resolved hostnames are kept in a thread-safe in-memory dict.

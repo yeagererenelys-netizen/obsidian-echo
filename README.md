@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./banner.svg" width="100%" alt="PacketScope — Network Forensics Engine"/>
+  <img src="./banner.svg" width="100%" alt="WhereIsMyPacket — Network Forensics Engine"/>
 </div>
 
 <div align="center">
@@ -18,7 +18,7 @@
 ---
 
 ```
-PacketScope is an open-source network forensics engine that captures,
+WhereIsMyPacket is an open-source network forensics engine that captures,
 decodes, and visualizes everything crossing your network — live.
 ```
 
@@ -94,7 +94,7 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 <details>
 <summary><strong>01 — Landing Page Impact</strong> &nbsp;·&nbsp; 30 seconds</summary>
 
-Open `http://localhost:8080`. Full-screen hero video with the PacketScope logo.
+Open `http://localhost:8080`. Full-screen hero video with the WhereIsMyPacket logo.
 Scroll down → 9 feature cards each with embedded video preview.
 
 </details>
@@ -184,7 +184,7 @@ Warn    ●  #eab308    Warnings · suspicious traffic
 ## `// 0xFF` License
 
 ```
-MIT License — © 2025 PacketScope
+MIT License — © 2025 WhereIsMyPacket
 ```
 
 <div align="center">
