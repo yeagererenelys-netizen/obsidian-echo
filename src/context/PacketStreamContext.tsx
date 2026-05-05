@@ -5,6 +5,8 @@ export interface Packet {
   timestamp: number;        // Unix milliseconds
   src_ip: string;
   dst_ip: string;
+  src_hostname?: string;    // Resolved hostname (e.g. "google.com"), may be undefined
+  dst_hostname?: string;
   src_port: number;
   dst_port: number;
   protocol: "TCP" | "UDP" | "ICMP" | "DNS" | "HTTP" | "HTTPS" | "OTHER";

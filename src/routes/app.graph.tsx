@@ -18,6 +18,7 @@ type ProtocolFilter = (typeof PROTOCOL_FILTERS)[number];
 const THREAT_FILTERS = ["ALL", "CLEAN", "SUSPICIOUS", "THREAT"] as const;
 type ThreatFilter = (typeof THREAT_FILTERS)[number];
 
+
 const EDGE_COLORS: Record<number, string> = {
   0: "#a3ff12",
   1: "#eab308",
@@ -25,15 +26,19 @@ const EDGE_COLORS: Record<number, string> = {
 };
 
 const NODE_COLORS: Record<string, string> = {
-  router: "#ffffff",
-  internal: "#a3ff12",
-  external: "#3b82f6",
-  threat: "#ef4444",
+  router:   "#ffffff",
+  internal: "#22c55e",   // green  — local network
+  external: "#ef4444",   // red    — external network
+  threat:   "#ff6600",   // orange — confirmed threat
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const edgeWidth = (packetCount: number) => Math.max(1, Math.min(6, Math.log2(packetCount + 1)));
-const nodeRadius = (node: Node) => (node.isThreat ? 16 : node.isInternal ? 14 : 10);
+const nodeRadius = (node: Node) => (node.isThreat ? 14 : node.isInternal ? 12 : 10);
+const nodeColor  = (node: Node) =>
+  node.isThreat ? NODE_COLORS.threat :
+  node.isInternal ? NODE_COLORS.internal :
+  NODE_COLORS.external;
 
 const getNodeId = (value: string | Node) => (typeof value === "string" ? value : value.id);
 const getLinkUid = (link: Link) => link.id;
@@ -159,10 +164,22 @@ function CommunicationGraph() {
     svg.selectAll("*").remove();
 
     const rootGroup = svg.append("g");
+
+    // ── Glow filter definition ─────────────────────────────────────────
+    const defs = svg.append("defs");
+    const glowFilter = defs.append("filter").attr("id", "node-glow").attr("x", "-50%").attr("y", "-50%").attr("width", "200%").attr("height", "200%");
+    glowFilter.append("feGaussianBlur").attr("in", "SourceGraphic").attr("stdDeviation", "6").attr("result", "blur");
+    const feMerge = glowFilter.append("feMerge");
+    feMerge.append("feMergeNode").attr("in", "blur");
+    feMerge.append("feMergeNode").attr("in", "blur");
+    feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+    // ───────────────────────────────────────────────────────────────────
+
     const linkGroup = rootGroup.append("g");
     const trailGroup = rootGroup.append("g");
     const pulseGroup = rootGroup.append("g");
     const nodeGroup = rootGroup.append("g");
+    const labelGroup = rootGroup.append("g");
 
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 4])
@@ -203,6 +220,9 @@ function CommunicationGraph() {
         ?.attr("cx", d => d.x ?? 0)
         .attr("cy", d => d.y ?? 0);
 
+      labelSelectionRef.current
+        ?.attr("x", d => d.x ?? 0)
+        .attr("y", d => (d.y ?? 0) + nodeRadius(d) + 13);
 
     });
 
@@ -244,7 +264,7 @@ function CommunicationGraph() {
     trailSelectionRef.current = trailGroup.selectAll("line");
     pulseSelectionRef.current = pulseGroup.selectAll("circle");
     nodeSelectionRef.current = nodeGroup.selectAll("circle");
-
+    labelSelectionRef.current = labelGroup.selectAll("text");
 
     return () => {
       simulation.stop();
@@ -392,16 +412,49 @@ function CommunicationGraph() {
       .on("click", (_, d) => setSelectedNodeId(d.id))
       .call(drag as any);
 
+    const NEW_NODE_GLOW_MS = 5000; // glow duration in ms
+    const now = Date.now();
+
     nodeSelection
       .merge(nodeEnter)
       .attr("r", d => nodeRadius(d))
-      .attr("fill", d => d.isThreat ? "#ef4444" : d.isInternal ? "#a3ff12" : "#3b82f6")
+      .attr("fill", d => nodeColor(d))
+      .attr("stroke", d => nodeColor(d))
+      .attr("stroke-width", 2)
+      .attr("stroke-opacity", 0.4)
       .attr("class", d => d.isThreat ? "threat-pulse" : "")
+      .attr("filter", d => (now - (d.firstSeen ?? now)) < NEW_NODE_GLOW_MS ? "url(#node-glow)" : null)
       .attr("opacity", d => (activeNodeIds.size > 0 && !activeNodeIds.has(d.id) ? 0.2 : 1));
 
     nodeSelection.exit().remove();
     nodeSelectionRef.current = nodeSelection.merge(nodeEnter);
 
+    // ── Labels ──────────────────────────────────────────────────
+    const labelSelection = svg
+      .select<SVGGElement>("g > g:nth-of-type(5)")
+      .selectAll<SVGTextElement, Node>("text")
+      .data(nodes, d => d.id);
+
+    const labelEnter = labelSelection
+      .enter()
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("font-size", "9px")
+      .attr("font-family", "'JetBrains Mono', monospace")
+      .attr("fill", "rgba(255,255,255,0.75)")
+      .attr("pointer-events", "none");
+
+    labelSelection
+      .merge(labelEnter)
+      .text("")   // No permanent labels — all info shown only on hover
+      .attr("fill", d =>
+        d.isThreat ? NODE_COLORS.threat :
+        d.isInternal ? NODE_COLORS.internal :
+        NODE_COLORS.external
+      );
+
+    labelSelection.exit().remove();
+    labelSelectionRef.current = labelSelection.merge(labelEnter);
 
   }, [nodes, filteredLinks, protocolSummaryByNode, activeNodeIds, dimensions]);
 
@@ -504,15 +557,15 @@ function CommunicationGraph() {
                 className="absolute bg-obsidian border border-graphite rounded-md px-3 py-2 text-xs text-silver pointer-events-none"
                 style={tooltipStyle}
               >
-                <div className="mono text-white text-[11px]">{hovered.node.hostname}</div>
-                <div className="mono text-[10px] text-ghost">{hovered.node.id}</div>
+                <div className="mono text-white text-[11px] font-bold mb-1">{hovered.node.hostname}</div>
+                <div className="mono text-[10px] text-ghost">IP: {hovered.node.id}</div>
+                <div className="mono text-[10px] text-ghost">Type: {hovered.node.isThreat ? "⚠ Threat" : hovered.node.isInternal ? "🟢 Local" : "🔴 External"}</div>
                 <div className="mono text-[10px] text-ghost">Packets: {hovered.node.packetCount.toLocaleString()}</div>
                 <div className="mono text-[10px] text-ghost">
-                  Bytes: {hovered.node.totalBytes > 1_000_000 
-                    ? (hovered.node.totalBytes/1_000_000).toFixed(1)+"MB" 
-                    : (hovered.node.totalBytes/1_000).toFixed(0)+"KB"}
+                  Bytes: {hovered.node.totalBytes > 1_000_000
+                    ? (hovered.node.totalBytes/1_000_000).toFixed(1)+" MB"
+                    : (hovered.node.totalBytes/1_000).toFixed(0)+" KB"}
                 </div>
-                <div className="mono text-[10px] text-ghost">Threat: {threatLabel(hovered.node.isThreat)}</div>
                 {hovered.protocols && (
                   <div className="mono text-[10px] text-ghost">Top: {hovered.protocols}</div>
                 )}

@@ -15,8 +15,10 @@ import tempfile
 # uvicorn backend.main:app → from backend.capture import capture
 try:
     from capture import capture
+    from dns_resolver import get_hostname, pre_resolve_popular_sites
 except ImportError:
     from backend.capture import capture
+    from backend.dns_resolver import get_hostname, pre_resolve_popular_sites
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,6 +31,8 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("PacketScope backend starting...")
+    # Pre-resolve popular sites so their IPs are labelled correctly from the start
+    await pre_resolve_popular_sites()
     yield
     logger.info("PacketScope backend shutting down...")
     capture.stop()
@@ -155,6 +159,9 @@ async def ws_capture(
                     queue.get(), 
                     timeout=5.0
                 )
+                # Enrich packet with resolved hostnames (instant cache hit or raw IP)
+                packet_dict["src_hostname"] = get_hostname(packet_dict["src_ip"])
+                packet_dict["dst_hostname"] = get_hostname(packet_dict["dst_ip"])
                 await websocket.send_text(json.dumps(packet_dict))
             except asyncio.TimeoutError:
                 # Send a ping to keep connection alive

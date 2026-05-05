@@ -9,6 +9,7 @@ export interface GraphNode {
   totalBytes: number;
   packetCount: number;
   lastSeen: number;
+  firstSeen: number;   // timestamp when this node was first discovered
   // D3 force simulation properties
   x?: number;
   y?: number;
@@ -63,37 +64,43 @@ export function useGraphData() {
 
   useEffect(() => {
     const unsub = subscribe((pkt) => {
-      const { src_ip, dst_ip, bytes, timestamp } = pkt;
+      const { src_ip, dst_ip, bytes, timestamp, src_hostname, dst_hostname } = pkt;
       const isInternal = (ip: string) => ip.startsWith("192.168.") || ip.startsWith("10.");
 
       // Upsert source node
       const srcNode = nodeMap.current.get(src_ip) ?? {
         id: src_ip,
-        hostname: HOSTNAMES[src_ip] ?? src_ip,
+        hostname: src_hostname ?? HOSTNAMES[src_ip] ?? src_ip,
         isInternal: isInternal(src_ip),
         isThreat: THREAT_IPS.has(src_ip),
         totalBytes: 0,
         packetCount: 0,
         lastSeen: timestamp,
+        firstSeen: timestamp,
       };
       srcNode.totalBytes += bytes;
       srcNode.packetCount += 1;
       srcNode.lastSeen = timestamp;
+      // Always update hostname if we now have a resolved name (not just the raw IP)
+      if (src_hostname && src_hostname !== src_ip) srcNode.hostname = src_hostname;
       nodeMap.current.set(src_ip, srcNode);
 
       // Upsert destination node
       const dstNode = nodeMap.current.get(dst_ip) ?? {
         id: dst_ip,
-        hostname: HOSTNAMES[dst_ip] ?? dst_ip,
+        hostname: dst_hostname ?? HOSTNAMES[dst_ip] ?? dst_ip,
         isInternal: isInternal(dst_ip),
         isThreat: THREAT_IPS.has(dst_ip),
         totalBytes: 0,
         packetCount: 0,
         lastSeen: timestamp,
+        firstSeen: timestamp,
       };
       dstNode.totalBytes += bytes;
       dstNode.packetCount += 1;
       dstNode.lastSeen = timestamp;
+      // Always update hostname if we now have a resolved name (not just the raw IP)
+      if (dst_hostname && dst_hostname !== dst_ip) dstNode.hostname = dst_hostname;
       nodeMap.current.set(dst_ip, dstNode);
 
       // Upsert edge
