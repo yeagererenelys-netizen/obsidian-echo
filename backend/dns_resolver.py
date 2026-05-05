@@ -7,9 +7,10 @@ How it works:
   - If the IP has not been seen before, it schedules a background asyncio task
     to resolve it and update the cache. The next packet from that IP will get
     the resolved name.
-  - Private/local IPs (192.168.x.x, 10.x.x.x, 127.x.x.x) are skipped to
+  - Private/local IPs such as (192.168.x.x, 10.x.x.x, 127.x.x.x) are skipped to
     avoid unnecessary lookups and to keep them labelled as "local".
 """
+
 
 import asyncio
 import socket
@@ -166,7 +167,6 @@ def get_hostname(ip: str) -> str:
     return ip
 
 
-# ── Popular site pre-resolution ────────────────────────────────────────────────
 # These sites use CDN/cloud infrastructure whose reverse-DNS gives unhelpful
 # names like "Amazon AWS". We forward-resolve them at startup so we can map
 # their IPs to the correct website name before any traffic is seen.
@@ -216,6 +216,7 @@ _POPULAR_SITES: list[tuple[str, str]] = [
     ("netlify.com",         "Netlify"),
     ("heroku.com",          "Heroku"),
     ("cloudflare.com",      "Cloudflare"),
+    ("https://wordlegame.org/" , "Wordle"),
 ]
 
 
