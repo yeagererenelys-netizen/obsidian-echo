@@ -15,7 +15,6 @@ const protoBadge = (p: string) => {
   return map[p] || "badge-neutral";
 };
 
-
 const Row = memo(({
   index,
   style,
@@ -153,6 +152,7 @@ function Capture() {
             {!isPaused ? <><Square size={14} /> PAUSE CAPTURE</> : <><Play size={14} /> RESUME CAPTURE</>}
           </button>
 
+          
           <div className="flex items-center bg-carbon rounded px-2 border border-graphite">
             <Activity size={14} className="text-ghost ml-1" />
             <select className="bg-transparent border-none mono text-[11px] text-white py-1 focus:ring-0 cursor-pointer" value="Simulated Traffic" onChange={() => {}}>
@@ -160,6 +160,7 @@ function Capture() {
             </select>
           </div>
 
+          
           <input
             className="input mono !text-xs !py-1.5 flex-1 min-w-[200px]"
             placeholder="Filter: tcp, udp, host 192.168.1.45, port 443"
@@ -167,6 +168,7 @@ function Capture() {
             onChange={e => setFilterText(e.target.value)}
           />
 
+          
           <div className="flex items-center gap-4">
             <div className="display text-[22px] text-white mono">LIVE</div>
             <div className="w-24 h-1 bg-carbon rounded overflow-hidden">
@@ -175,6 +177,7 @@ function Capture() {
           </div>
         </div>
 
+        
         <div className="ps-card !p-0 overflow-hidden border border-graphite/40">
           <div className="flex items-center gap-4 px-4 py-2 border-b border-graphite bg-obsidian-deep micro uppercase tracking-wider text-ghost">
             <div className="w-12">#</div>
