@@ -291,11 +291,11 @@
   <line class="hline" x1="50" y1="200" x2="850" y2="200" style="animation-delay: 1.25s"/>
 
   <!-- Glitch layers (behind title) -->
-  <text class="glitch1" x="450" y="155" text-anchor="middle">PACKETSCOPE</text>
-  <text class="glitch2" x="450" y="155" text-anchor="middle">PACKETSCOPE</text>
+  <text class="glitch1" x="450" y="155" text-anchor="middle">WhereIsMyPacket</text>
+  <text class="glitch2" x="450" y="155" text-anchor="middle">WhereIsMyPacket</text>
 
   <!-- Main title -->
-  <text class="title" x="450" y="155" text-anchor="middle">PACKETSCOPE</text>
+  <text class="title" x="450" y="155" text-anchor="middle">WhereIsMyPacket</text>
 
   <!-- Subtitle -->
   <text class="subtitle" x="450" y="183" text-anchor="middle">NETWORK FORENSICS ENGINE</text>
