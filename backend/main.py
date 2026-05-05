@@ -133,11 +133,11 @@ async def ws_capture(
     queue: asyncio.Queue = asyncio.Queue(maxsize=1000)
     loop = asyncio.get_event_loop()
 
-    # Start capture (no-op if already running from another connection)
+    # Start capture (no-operation if already running from another connection)
     started = capture.start(queue=queue, loop=loop, iface=iface, bpf_filter=filter)
 
     if not started:
-        # Send a special error message so the frontend knows why it's falling back to mock mode
+        # Send a special error message so the frontend knows why it's falling back to mock mode.
         await websocket.send_text(json.dumps({
             "error": "capture_failed",
             "reason": "Scapy requires root/admin privileges. "
@@ -146,6 +146,7 @@ async def ws_capture(
         await websocket.close()
         return
 
+    
     try:
         while True:
             # Wait for next packet from the queue (timeout avoids blocking forever if no traffic)
@@ -161,12 +162,12 @@ async def ws_capture(
                     await websocket.send_text(json.dumps({"ping": True}))
                 except Exception:
                     break
-
+    
     except WebSocketDisconnect:
         logger.info("Frontend disconnected")
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
     finally:
-        # If a client disconnects, we stop capture for simplicity.
+        # For simplicity, if a client disconnects, we stop capture.
         # A better approach would be to refcount, if there are muktiple clients.
         capture.stop()
