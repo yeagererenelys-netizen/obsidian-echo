@@ -26,6 +26,8 @@ import { Route as AppCaptureRouteImport } from './routes/app.capture'
 import { Route as AppBeaconingRouteImport } from './routes/app.beaconing'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppDevicesIpRouteImport } from './routes/app.devices.$ip'
+import { Route as SignInRouteImport } from './routes/signin'
+import { Route as SignUpRouteImport } from './routes/signup'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -112,6 +114,16 @@ const AppDevicesIpRoute = AppDevicesIpRouteImport.update({
   path: '/$ip',
   getParentRoute: () => AppDevicesRoute,
 } as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +143,8 @@ export interface FileRoutesByFullPath {
   '/app/vpn': typeof AppVpnRoute
   '/app/': typeof AppIndexRoute
   '/app/devices/$ip': typeof AppDevicesIpRoute
+  '/signin': typeof SignInRoute
+  '/signup': typeof SignUpRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -148,6 +162,8 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AppSettingsRoute
   '/app/vpn': typeof AppVpnRoute
   '/app': typeof AppIndexRoute
+  '/signin': typeof SignInRoute
+  '/signup': typeof SignUpRoute
   '/app/devices/$ip': typeof AppDevicesIpRoute
 }
 export interface FileRoutesById {
@@ -169,6 +185,8 @@ export interface FileRoutesById {
   '/app/vpn': typeof AppVpnRoute
   '/app/': typeof AppIndexRoute
   '/app/devices/$ip': typeof AppDevicesIpRoute
+  '/signin': typeof SignInRoute
+  '/signup': typeof SignUpRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -190,6 +208,8 @@ export interface FileRouteTypes {
     | '/app/vpn'
     | '/app/'
     | '/app/devices/$ip'
+    | '/signin'
+    | '/signup'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -207,6 +227,8 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/vpn'
     | '/app'
+    | '/signin'
+    | '/signup'
     | '/app/devices/$ip'
   id:
     | '__root__'
@@ -226,6 +248,8 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/vpn'
     | '/app/'
+    | '/signin'
+    | '/signup'
     | '/app/devices/$ip'
   fileRoutesById: FileRoutesById
 }
@@ -248,6 +272,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/': {
@@ -409,6 +447,8 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

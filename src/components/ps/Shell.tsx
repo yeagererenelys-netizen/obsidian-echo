@@ -95,7 +95,9 @@ export function Topbar() {
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ghost" />
         <input className="input mono !text-xs !pl-9 !h-8" placeholder="⌘K  Search everything..." />
       </div>
-      <div className="flex items-center gap-4 ml-auto">
+      <div className="flex items-center gap-3 ml-auto">
+        <Link to="/signin" className="btn btn-secondary !text-[12px] !py-1 !px-3">Sign In</Link>
+        <Link to="/signup" className="btn btn-primary !text-[12px] !py-1 !px-3">Sign Up</Link>
         <div className="text-right leading-tight">
           <div className="micro">Rate</div>
           <div className="mono text-xs text-lime">2,341 pkt/s</div>
