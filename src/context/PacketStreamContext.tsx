@@ -212,8 +212,9 @@ export function PacketStreamProvider({ children }: { children: ReactNode }) {
 
       ws.onmessage = (event) => {
         try {
-          const pkt = JSON.parse(event.data) as Packet;
-          dispatch(pkt);
+          const data = JSON.parse(event.data);
+          if (data.ping) return;
+          dispatch(data as Packet);
         } catch (e) {
           console.error("Failed to parse packet", e);
         }

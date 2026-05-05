@@ -4,7 +4,10 @@ import logging
 from typing import Optional
 from scapy.sendrecv import AsyncSniffer
 from scapy.packet import Packet as ScapyPacket
-from backend.packet_decoder import decode_packet
+try:
+    from backend.packet_decoder import decode_packet
+except ImportError:
+    from packet_decoder import decode_packet
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +80,10 @@ class PacketCapture:
     def stop(self):
         with self._lock:
             if self._sniffer and self._running:
-                self._sniffer.stop()
+                try:
+                    self._sniffer.stop()
+                except Exception as e:
+                    logger.warning(f"Error stopping sniffer: {e}")
                 self._running = False
                 logger.info("Packet capture stopped")
 

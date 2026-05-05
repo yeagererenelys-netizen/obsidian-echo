@@ -8,6 +8,8 @@ import { VideoBackground } from "./VideoBackground";
 import { VIDEOS } from "@/config/videoConfig";
 import { useAlertStore } from "@/hooks/useAlertStore";
 
+import { usePacketStream } from "@/hooks/usePacketStream";
+
 const NAV = [
   { cat: "MAIN", items: [
     { to: "/app/overview", label: "Overview", icon: LayoutGrid },
@@ -35,6 +37,7 @@ const NAV = [
 export function Sidebar() {
   const loc = useLocation();
   const { unreadCount } = useAlertStore();
+  const { totalPackets } = usePacketStream();
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-void border-r border-graphite flex flex-col z-40">
@@ -65,7 +68,7 @@ export function Sidebar() {
           <div className="micro mb-2">Engine Status</div>
           <div className="flex items-center gap-2 mb-1"><span className="dot dot-lime" /><span className="text-xs text-white">RUNNING</span></div>
           <div className="mono text-[11px] text-ghost">eth0</div>
-          <div className="mono text-[11px] text-lime">1,247,832 pkts</div>
+          <div className="mono text-[11px] text-lime">{totalPackets.toLocaleString()} pkts</div>
           <button className="btn btn-secondary !text-[11px] !py-1 !px-2 mt-2 w-full">Stop Capture</button>
         </div>
       </div>
@@ -74,6 +77,8 @@ export function Sidebar() {
 }
 
 export function Topbar() {
+  const { packetRate } = usePacketStream();
+
   return (
     <header
       className="fixed top-0 left-0 right-0 h-[52px] border-b border-graphite z-50 flex items-center px-5 gap-4"
@@ -100,7 +105,7 @@ export function Topbar() {
         <Link to="/signup" className="btn btn-primary !text-[12px] !py-1 !px-3">Sign Up</Link>
         <div className="text-right leading-tight">
           <div className="micro">Rate</div>
-          <div className="mono text-xs text-lime">2,341 pkt/s</div>
+          <div className="mono text-xs text-lime">{packetRate.toLocaleString()} pkt/s</div>
         </div>
         <button className="relative text-silver hover:text-white">
           <Bell size={16} />
