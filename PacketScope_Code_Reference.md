@@ -1,4 +1,4 @@
-# PacketScope — Code Reference & Function Documentation
+# WhereIsMyPacket — Code Reference & Function Documentation
 
 > **Project:** PacketScope Network Forensics Engine  
 > **Stack:** Python 3.11+ (FastAPI, Scapy) · React 18 (D3.js, Leaflet) · WebSocket  
